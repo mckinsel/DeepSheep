@@ -1,0 +1,30 @@
+import "deck.proto";
+
+package sheepshead.model;
+
+enum PartnerMethod {
+  CALLED_ACE = 0;
+  JACK_OF_DIAMONDS = 1;
+  NO_PARTNER = 2;
+}
+
+enum NoPickerResult {
+  LEASTERS = 0;
+  DOUBLER = 1;
+  FORCED_PICK = 2;
+}
+
+enum StakesDoubler {
+  CRACK = 0;
+  CRACKBACK = 1;
+  BLITZ = 2;
+}
+
+message RuleVariation {
+  optional int32 num_players = 1 [default = 5];
+  optional Suit trump_suit = 2 [default = DIAMONDS];
+  optional PartnerMethod partner_method = 3 [default = CALLED_ACE];
+  optional NoPickerResult no_picker_result = 4 [default = LEASTERS];
+  optional bool the_spitz = 5 [default = false];
+  repeated StakesDoubler stakes_doubler = 6;
+}

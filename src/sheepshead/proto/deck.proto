@@ -1,0 +1,29 @@
+package sheepshead.model;
+
+enum Suit {
+  DIAMONDS = 0;
+  HEARTS = 1;
+  SPADES = 2;
+  CLUBS = 3;
+}
+
+enum Rank {
+  ACE = 0;
+  TEN = 1;
+  KING = 2;
+  QUEEN = 3;
+  JACK = 4;
+  NINE = 5;
+  EIGHT = 6;
+  SEVEN = 7;
+}
+
+message Card {
+  required Suit suit = 1;
+  required Rank rank = 2;
+  optional bool unknown = 3 [default = false];
+}
+
+message Deck {
+  repeated Card cards = 1;
+}

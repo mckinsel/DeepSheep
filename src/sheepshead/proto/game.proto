@@ -1,0 +1,37 @@
+import "rule_variation.proto";
+import "deck.proto";
+
+package sheepshead.model;
+
+message Hand {
+  required RuleVariation rule_variation = 1;
+  optional int32 leader_position = 2;
+  optional PickingRound picking_round = 4;
+  repeated Trick tricks = 3;
+  repeated Seat seats = 5;
+}
+
+message Seat {
+  optional bool hidden = 1 [default = true];
+  repeated Card held_cards = 2;
+}
+
+message Trick {
+  optional int32 leader_position = 1;
+  repeated Card laid_cards = 2;
+}
+
+message PickingRound {
+  enum PickingDecision {
+    PICK = 0;
+    PASS = 1;
+  }
+  enum PartnerDecision {
+    PARTNER = 0;
+    LONER = 1;
+  }
+  optional int32 leader_position = 1;
+  repeated PickingDecision picking_decisions = 2;
+  optional PartnerDecision partner_decision = 3;
+  optional Card partner_card = 4;
+}
