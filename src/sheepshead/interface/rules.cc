@@ -8,26 +8,21 @@ Rules::Rules()
   // Just use the defaults defined in the proto file.
 }
 
-Rules::Rules(const ConstHandHandle& hand_handle)
+Rules::Rules(const ConstHandHandle& hand_ptr)
+  : m_hand_ptr(hand_ptr)
 {
-  m_rule_variation = hand_handle->rule_variation();
-}
-
-Rules::Rules(const sheepshead::model::RuleVariation& rule_variation)
-{
-  m_rule_variation = rule_variation;
 }
 
 int Rules::number_of_players() const
 {
-  return m_rule_variation.num_players();
+  return m_hand_ptr->rule_variation().num_players();
 }
 
-int Rules::number_of_cards_per_trick() const
+int Rules::number_of_cards_per_player() const
 {
   int num_cards = 0;
 
-  switch(m_rule_variation.num_players()) {
+  switch(m_hand_ptr->rule_variation().num_players()) {
     case 3:
       num_cards = 10;
       break;
@@ -48,7 +43,7 @@ int Rules::number_of_cards_in_blinds() const
 {
   int num_cards = 0;
 
-  switch(m_rule_variation.num_players()) {
+  switch(m_hand_ptr->rule_variation().num_players()) {
     case 3:
       num_cards = 2;
       break;
@@ -67,42 +62,42 @@ int Rules::number_of_cards_in_blinds() const
 
 bool Rules::partner_by_called_ace() const
 {
-  return m_rule_variation.partner_method() == sheepshead::model::CALLED_ACE;
+  return m_hand_ptr->rule_variation().partner_method() == sheepshead::model::CALLED_ACE;
 }
 
 bool Rules::partner_by_jack_of_diamonds() const
 {
-  return m_rule_variation.partner_method() == sheepshead::model::JACK_OF_DIAMONDS;
+  return m_hand_ptr->rule_variation().partner_method() == sheepshead::model::JACK_OF_DIAMONDS;
 }
 
 bool Rules::no_picker_leasters() const
 {
-  return m_rule_variation.no_picker_result() == sheepshead::model::LEASTERS;
+  return m_hand_ptr->rule_variation().no_picker_result() == sheepshead::model::LEASTERS;
 }
 
 bool Rules::no_picker_doubler() const
 {
-  return m_rule_variation.no_picker_result() == sheepshead::model::DOUBLER;
+  return m_hand_ptr->rule_variation().no_picker_result() == sheepshead::model::DOUBLER;
 }
 
 bool Rules::no_picker_forced_pick() const
 {
-  return m_rule_variation.no_picker_result() == sheepshead::model::FORCED_PICK;
+  return m_hand_ptr->rule_variation().no_picker_result() == sheepshead::model::FORCED_PICK;
 }
 
 bool Rules::trump_is_diamonds() const
 {
-  return m_rule_variation.trump_suit() == sheepshead::model::DIAMONDS;
+  return m_hand_ptr->rule_variation().trump_suit() == sheepshead::model::DIAMONDS;
 }
 
 bool Rules::trump_is_clubs() const
 {
-  return m_rule_variation.trump_suit() == sheepshead::model::CLUBS;
+  return m_hand_ptr->rule_variation().trump_suit() == sheepshead::model::CLUBS;
 }
 
 bool Rules::order_is_the_spitz() const
 {
-  return m_rule_variation.the_spitz();
+  return m_hand_ptr->rule_variation().the_spitz();
 }
 
 // TODO: implement cracking and recracking

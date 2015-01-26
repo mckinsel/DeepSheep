@@ -3,10 +3,17 @@
 namespace sheepshead {
 namespace interface {
 
-Hand::Hand(Rules& rules)
+Hand::Hand()
 {
   m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
-  m_hand_ptr->set_allocated_rule_variation(&rules.m_rule_variation);
+}
+
+Hand::Hand(const Rules& rules)
+{
+  m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
+
+  model::RuleVariation rule_variation(rules.m_hand_ptr->rule_variation());
+  m_hand_ptr->set_allocated_rule_variation(&rule_variation);
 }
 
 Hand::Hand(std::istream* input)
@@ -24,9 +31,9 @@ Rules Hand::rules() const
   return Rules(m_hand_ptr);
 }
 
-Chronicle Hand::chronicle() const
+History Hand::history() const
 {
-  return Chronicle(m_hand_ptr);
+  return History(m_hand_ptr);
 }
 
 // TODO: Implement Hand state methods
@@ -35,7 +42,7 @@ bool Hand::is_playable() const
   return false;
 }
 
-bool Hand::is_arbitable() const
+bool Hand::is_arbitrable() const
 {
   return false;
 }

@@ -5,7 +5,10 @@
 
 #include "sheepshead/interface/handle_types.h"
 #include "sheepshead/interface/rules.h"
-#include "sheepshead/interface/chronicle.h"
+#include "sheepshead/interface/history.h"
+#include "sheepshead/interface/playmaker.h"
+#include "sheepshead/interface/playerid.h"
+#include "sheepshead/interface/arbiter.h"
 
 #include <iostream>
 #include <memory>
@@ -14,21 +17,46 @@
 namespace sheepshead {
 namespace interface {
 
+/// The interface to a Sheepshead hand, the main Sheepshead interface.
 
+/** Provides information about the basic state of the hand as well as access to
+ *  more specialized interfaces for investigating or manipulating the hand.
+ */
 class Hand
 {
 public:
-  Hand(Rules& rules);
+  //! Construct a Hand with default rules.
+  Hand();
+
+  //! Construct a Hand with a specified rule variation.
+  Hand(const Rules& rules);
+
+  //! Construct a Hand by reading a previously serialized Hand from an istream.
   Hand(std::istream* input);
   
+  //! Serialize the Hand to an ostream.
   bool serialize(std::ostream* output) const;
   
+  //! Return true iff the Hand is in the playable state. 
   bool is_playable() const;
-  bool is_arbitable() const;
-  bool is_complete() const;
+  
+  //! Return true iff the Hand is in the arbitable state. 
+  bool is_arbitrable() const;
 
+  //! Return true iff the Hand is in the complete state. 
+  bool is_complete() const;
+  
+  //! Get a specialized interface to the rule variant used by the Hand.
   Rules rules() const;
-  Chronicle chronicle() const;
+
+  //! Get a specialized interface to the history of play so far in the Hand.
+  History history() const;
+
+  //! Get a specialized interface for a player to change the state of the Hand
+  Playmaker playmaker(PlayerId);
+
+  //! Get a specialized interface to apply the rules of Sheepshead to the Hand.
+  //Arbiter arbiter();
    
 private:
   MutableHandHandle m_hand_ptr;

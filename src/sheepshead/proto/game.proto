@@ -1,37 +1,68 @@
 import "rule_variation.proto";
 import "deck.proto";
 
+/// Internal models for a hand of Sheepshead and its components.
+
+
 package sheepshead.model;
 
+/// Internal model of a Sheepshead hand.
 message Hand {
+  /// The rules used to play the hand.
   required RuleVariation rule_variation = 1;
-  optional int32 leader_position = 2;
+
+  /// The round of a hand where the picker and perhaps partner are determined.
   optional PickingRound picking_round = 4;
+
+  /// The tricks of a hand, where each player plays one card.
   repeated Trick tricks = 3;
+
+  /// The seats that hold information about each player of the Hand.
   repeated Seat seats = 5;
 }
 
+/// Information for a single player of a hand.
 message Seat {
-  optional bool hidden = 1 [default = true];
-  repeated Card held_cards = 2;
+  /// The cards which the player has not yet played.
+  repeated Card held_cards = 1;
 }
 
+/// Round of a Hand where each player plays one card.
 message Trick {
+  /// The position of the player who plays the first card of the Trick.
   optional int32 leader_position = 1;
+  
+  /// The cards played in the Trick.
   repeated Card laid_cards = 2;
 }
 
+/// Round of a Hand where a player picks the blinds and may call a partner.
 message PickingRound {
+  
+  /// Enum for the two possible decisions a player can make when picking.
   enum PickingDecision {
     PICK = 0;
     PASS = 1;
   }
-  enum PartnerDecision {
+  
+  /// Enum for the two possible decisions a player can make about whether to call a partner.
+  enum LonerDecision {
     PARTNER = 0;
     LONER = 1;
   }
+
+  /// The position of the first player to make the picking decision.
   optional int32 leader_position = 1;
+
+  /// The picking decisions made by each player.
   repeated PickingDecision picking_decisions = 2;
-  optional PartnerDecision partner_decision = 3;
+
+  /// The parter decision made by the picker.
+  optional LonerDecision partner_decision = 3;
+
+  /// The card that indicates which player is the partner.
   optional Card partner_card = 4;
+  
+  /// The cards discarded by the picker
+  repeated Card discarded_cards = 5;
 }
