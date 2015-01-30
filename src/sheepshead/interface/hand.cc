@@ -26,6 +26,11 @@ bool Hand::serialize(std::ostream* output) const
   return m_hand_ptr->SerializeToOstream(output);
 }
 
+PlayerItr Hand::dealer() const
+{
+  return PlayerItr(m_hand_ptr, 0);
+}
+
 Rules Hand::rules() const
 {
   return Rules(m_hand_ptr);

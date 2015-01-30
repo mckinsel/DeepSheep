@@ -38,7 +38,7 @@ PlayerId ready_for_trick_play(const ConstHandHandle& hand_ptr);
 /// Return true if the Hand is complete, and no more plays or rule applications are possible.
 bool is_finished(const ConstHandHandle& hand_ptr)
 {
-  if(Rules(hand_ptr).number_of_cards_per_player() > History(hand_ptr).number_of_tricks())
+  if(Rules(hand_ptr).number_of_cards_per_player() > History(hand_ptr).number_of_finished_tricks())
     return false;
   return History(hand_ptr).latest_trick().is_finished();
 }
@@ -82,7 +82,7 @@ bool ready_for_next_trick(const ConstHandHandle& hand_ptr)
   
   // If the PickingRound is finished, and we don't have any tricks yet, then we
   // are ready for the next trick
-  if(history.number_of_tricks() == 0) return true;
+  if(history.number_of_started_tricks() == 0) return true;
   
   // Finally, if the PickingRound is finished and at least one trick exists,
   // just return if the current trick is finished.
@@ -95,7 +95,8 @@ PlayerId ready_for_pick_play(const ConstHandHandle& hand_ptr)
   auto history = History(hand_ptr);
   
   if(history.picking_round().is_finished()) return PlayerId();
-  
+
+  return PlayerId();
 }
 
 } // namespace internal

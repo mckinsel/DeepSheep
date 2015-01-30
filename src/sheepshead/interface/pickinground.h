@@ -10,77 +10,85 @@
 namespace sheepshead {
 namespace interface {
 
-class ConstPickDecisionIterator; // defined below
+template<typename Handle_T>
+class PickDecisionItr; // defined below
+  
+//! An enum for the different picking decisions a player can make.
 
-//! The intreface to the picking round of a Hand.
+//! A player can pick or pass, and it is also possible that someone picked
+//! before he had a chance, in which case, he was unasked.
+enum class PickDecision {PICK, PASS, UNASKED};
+
+//! An enum for decision about going alone vs selecting a partner.
+enum class LonerDecision {PARTNER, LONER, NONE};
 
 //! The picking round is the round where player either pick or pass. Then,
 //! depending on the rules and circumstances, the picking player may choose
 //! a partner, designate one of her cards as unknown, and discard cards.
+template<typename Handle_T>
 class PickingRound
 {
 public:
-  
-  //! An enum for the different picking decisions a player can make.
-
-  //! A player can pick or pass, and it is also possible that someone picked
-  //! before he had a chance, in which case, he was unasked.
-  enum class PickDecision {PICK, PASS, UNASKED};
-
-  //! An enum for decision about going alone.
-  enum class LonerDecision {PARTNER, LONER};
 
   //! Construct a null PickingRound.
   PickingRound();
 
   //! Construct an interface to the PickingRound of a Hand.
-  PickingRound(const ConstHandHandle& hand_ptr);
+  PickingRound(const Handle_T& hand_ptr);
   
-  //! Return the PlayerId of the player makes the pick/pass decision first.
-  PlayerId leader() const;
+  //! Return an iterator to the first pick decision
+  PickDecisionItr<Handle_T> pick_decisions_begin() const;
+
+  //! Return an iterator past the last pick decision
+  PickDecisionItr<Handle_T> pick_decisions_end() const;
 
   //! Return the PlayerId of the player who picked.
   
   //! If no one picked, or no one has picked yet, return the null PlayerId.
   PlayerId picker() const;
 
+  LonerDecision loner_decision() const;
+  
   //! Return the card selected by the picker as the partner card.
   Card partner_card() const;
-  
-  //! Return an iterator to the first pick decision
-  ConstPickDecisionIterator pick_decision_cbegin() const;
 
-  //! Return an iterator past the last pick decision
-  ConstPickDecisionIterator pick_decision_cend() const;
-  
   bool is_null() const;
   bool is_started() const;
   bool is_finished() const;
 
 private:
-  const ConstHandHandle m_hand_ptr;
+  Handle_T m_hand_ptr;
 
 }; // class PickingRound
 
-class ConstPickDecisionIterator
-  : public std::iterator<std::input_iterator_tag, PickingRound::PickDecision, int>
+/// An iterator over the picking decisions of a PickingRound
+template<typename Handle_T>
+class PickDecisionItr
+  : public std::iterator<std::forward_iterator_tag, PickDecision, int>
 {
 public:
-  bool operator==(const ConstPickDecisionIterator& rhs);
-  bool operator!=(const ConstPickDecisionIterator& rhs);
+  PickDecisionItr();
+  PickDecisionItr(const PickDecisionItr& from) = default;
+  PickDecisionItr& operator=(const PickDecisionItr& from) = default;
+  
+  PickDecisionItr(const Handle_T& hand_ptr, int decision_number);
+  
+  PickDecisionItr& operator++();
+  PickDecisionItr operator++(int);
+  PickDecisionItr& operator--();
+  PickDecisionItr operator--(int);
 
-  const PickingRound::PickDecision& operator*();
-  ConstPickDecisionIterator& operator++();
+  PickDecision& operator*();
+
+  bool operator==(const PickDecisionItr& rhs) const;
+  bool operator!=(const PickDecisionItr& rhs) const;
 
 private:
-  friend class PickingRound;
-  ConstPickDecisionIterator(const ConstHandHandle&, const PlayerId&);
+  Handle_T m_hand_ptr;
+  int m_decision_number;
+  PickDecision m_pick_decision;
 
-  const ConstHandHandle m_hand_ptr;
-  PlayerId m_player_id;
-  PickingRound::PickDecision m_decision;
-
-}; // class ConstPickDecisionIterator
+}; // class PickDecisionItr
 
 } // namespace interface
 } // namespade sheepshead

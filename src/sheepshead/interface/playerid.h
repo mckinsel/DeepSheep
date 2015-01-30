@@ -11,46 +11,53 @@
 namespace sheepshead {
 namespace interface {
 
-class PlayerId; //defined below
-
-class PlayerIterator : 
-  public::std::iterator<std::forward_iterator_tag, PlayerId, int>
-{
-public:
-  PlayerIterator();
-  PlayerIterator(const PlayerIterator& from);
-  PlayerIterator& operator=(const PlayerIterator& from);
-
-  bool operator==(const PlayerIterator& rhs) const;
-  bool operator!=(const PlayerIterator& rhs) const;
-  
-  PlayerId& operator*();
-
-  PlayerIterator& operator++();
-
-private:
-  PlayerId m_player_id;
-}
-
 class PlayerId
 {
 public:
   PlayerId();
+  PlayerId(const PlayerId& from) = default;
+  PlayerId& operator=(const PlayerId& from) = default;
+
   PlayerId(const ConstHandHandle&, int);
 
   bool is_null() const;
 
   bool operator==(const PlayerId& rhs) const;
   bool operator!=(const PlayerId& rhs) const;
-  PlayerId& operator++();
-  PlayerId& operator--();
-  PlayerId&
 
 private:
-  const ConstHandHandle m_hand_ptr;
+  ConstHandHandle m_hand_ptr;
   int m_position;
 
 }; // class PlayerId
+
+class PlayerItr : 
+  public::std::iterator<std::forward_iterator_tag, PlayerId, int>
+{
+public:
+  PlayerItr();
+  PlayerItr(const PlayerItr& from) = default;
+  PlayerItr& operator=(const PlayerItr& from) = default;
+
+  PlayerItr(const ConstHandHandle& hand_ptr, int position);
+  
+  PlayerId& operator*();
+
+  PlayerItr& operator++();
+  PlayerItr operator++(int);
+  PlayerItr& operator--();
+  PlayerItr operator--(int);
+
+  bool operator==(const PlayerItr& rhs) const;
+  bool operator!=(const PlayerItr& rhs) const;
+
+private:
+  ConstHandHandle m_hand_ptr;
+  int m_position;
+  PlayerId m_playerid;
+
+};
+
 
 } // namespace interface
 } // namespade sheepshead

@@ -15,25 +15,30 @@ namespace interface {
 /// The interface to the history of a Hand.
 class History
 {
+private:
+  ConstHandHandle m_hand_ptr;
+
 public:
   History(const ConstHandHandle& hand_ptr); 
   
-  PickingRound picking_round() const;
+  //! An interface to the Hand's picking round 
+  PickingRound<decltype(m_hand_ptr)> picking_round() const;
   
-  //! A const iterator pointing to the first trick of the Hand.
-  ConstTrickIterator tricks_cbegin() const;
+  //! An iterator pointing to the first trick of the Hand.
+  TrickItr<decltype(m_hand_ptr)> tricks_cbegin() const;
 
-  //! A const iterator pointing past the last trick of the Hand.
-  ConstTrickIterator tricks_cend() const;
+  //! An iterator pointing past the last trick of the Hand.
+  TrickItr<decltype(m_hand_ptr)> tricks_cend() const;
   
   //! The number of started tricks in the Hand
-  int number_of_tricks() const;
+  int number_of_started_tricks() const;
+  
+  //! The number of started tricks in the Hand
+  int number_of_finished_tricks() const;
 
   //! The latest Trick being played in the Hand.
-  Trick latest_trick() const;
+  Trick<decltype(m_hand_ptr)> latest_trick() const;
 
-private:
-  const ConstHandHandle m_hand_ptr;
 
 }; // class History
 

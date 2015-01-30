@@ -4,73 +4,89 @@
 #include "sheepshead/proto/game.pb.h"
 
 #include "sheepshead/interface/handle_types.h"
-#include "sheepshead/interface/playerid.h"
+//#include "sheepshead/interface/playerid.h"
 
 #include <iterator>
 #include <memory>
+#include <type_traits>
 
 namespace sheepshead {
 namespace interface {
 
 /// The interface to a single trick.
+template<typename Handle_T>
 class Trick
 {
 public:
   //! Construct an interface to a null trick.
   Trick();
 
+  Trick(const Trick& from) = default;
+  Trick& operator=(const Trick& from) = default;
+
   //! Construct an interface to the trick_numberth trick of a hand.
-  Trick(const ConstHandHandle& hand_ptr, int trick_number);
-  
+  Trick(const Handle_T& hand_ptr, int trick_number) 
+    : m_hand_ptr(hand_ptr), m_trick_number(trick_number) {}
+
   //! Return true  if the Trick wraps a null trick, a conceptually non-existent trick.
-  bool is_null();
+  bool is_null() const;
   
   /// Return true if the Trick has started.
 
   //! Even if no cards for the trick have been played yet, will return true if
-  //! the trick has been created.
+  //! the trick has been created in the model.
   bool is_started() const; 
 
   //! Return true if all cards for the Trick have been played.
   bool is_finished() const;
   
   //! Return the PlayerId of the player who plays the first card of the Trick.
-  PlayerId leader() const;
+  //PlayerId leader() const;
 
   //! Return the PlayerId of the player who won the Trick.
 
   //! Return a null player if the Trick is not finished.
-  PlayerId winner() const;
+  //PlayerId winner() const;
 
   //Card card_played_by_player(PlayerId) const;
 
 private:
-  const ConstHandHandle m_hand_ptr;
-  const int m_trick_number;
+  Handle_T m_hand_ptr;
+  int m_trick_number;
 
 }; // class Trick
 
 
-/// An iterator over the Tricks of a hand History.
-class ConstTrickIterator
-  : public std::iterator<std::input_iterator_tag, Trick, int>
+/// An iterator over the Tricks of a Hand History.
+template<typename Handle_T>
+class TrickItr
+  : public std::iterator<std::forward_iterator_tag, Trick<Handle_T>, int>
 {
 public:
-  bool operator==(const ConstTrickIterator& rhs) const;
-  bool operator!=(const ConstTrickIterator& rhs) const;;
-  const Trick& operator*();
-  ConstTrickIterator& operator++();
+  TrickItr();
+  TrickItr(const TrickItr& from) = default;
+  TrickItr& operator=(const TrickItr& from) = default;
+
+  TrickItr(const Handle_T& hand_ptr, int trick_number);
+  
+  TrickItr& operator++();
+  TrickItr operator++(int);
+  TrickItr& operator--();
+  TrickItr operator--(int);
+
+  Trick<Handle_T>& operator*();
+
+  bool operator==(const TrickItr& rhs) const;
+  bool operator!=(const TrickItr& rhs) const;
 
 private:
-  friend class History;
-  ConstTrickIterator(const ConstHandHandle&, int);
-
-  const ConstHandHandle m_hand_ptr;
+  Handle_T m_hand_ptr;
   int m_trick_number;
-  std::unique_ptr<const Trick> m_trick_uptr;
+  Trick<Handle_T> m_trick;
 
-}; // class ConstTrickIterator
+}; // class TrickItr
 
+// Implementation of TrickItr
 
 } // namespace interface
 } // namespace sheepshead

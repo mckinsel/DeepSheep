@@ -2,15 +2,17 @@
 
 #include "sheepshead/interface/rules.h"
 
+#include <cassert>
+
 namespace sheepshead {
 namespace interface {
 
-PlayerId::PlayerId(const ConstHandHandle& hand, int pos) :
-  m_hand_ptr(hand), m_position(pos)
-{}
-
 PlayerId::PlayerId() :
   m_hand_ptr(nullptr), m_position(-1)
+{}
+
+PlayerId::PlayerId(const ConstHandHandle& hand, int pos) :
+  m_hand_ptr(hand), m_position(pos)
 {}
 
 bool PlayerId::is_null() const
@@ -30,26 +32,60 @@ bool PlayerId::operator!=(const PlayerId& other) const
   return !(*this == other);
 }  
 
-PlayerId& PlayerId::operator++()
-{
-  if(this->is_null()) return *this;
+PlayerItr::PlayerItr()
+  : m_hand_ptr(nullptr), m_position(-1)
+{}
 
-  auto rules = Rules(m_hand_ptr);
-  int num_players = rules.number_of_players();
-  int next_position = (m_position + 1) % num_players;
-  m_position = next_position;
+PlayerItr::PlayerItr(const ConstHandHandle& hand_ptr, int position)
+  : m_hand_ptr(hand_ptr), m_position(position)
+{
+  assert(m_position < Rules(m_hand_ptr).number_of_players());
+  assert(m_position >= 0);
+}
+
+PlayerId& PlayerItr::operator*()
+{
+  assert(m_position < Rules(m_hand_ptr).number_of_players());
+  assert(m_position >= 0);
+  m_playerid = PlayerId(m_hand_ptr, m_position);
+  return m_playerid;
+}
+
+PlayerItr& PlayerItr::operator++()
+{
+  m_position = (m_position + 1) % Rules(m_hand_ptr).number_of_players();
   return *this;
 }
 
-PlayerId& PlayerId::operator--()
+PlayerItr PlayerItr::operator++(int)
 {
-  if(this->is_null()) return *this;
+  auto copy(*this);
+  ++(*this); 
+  return copy;
+}
 
-  auto rules = Rules(m_hand_ptr);
-  int num_players = rules.number_of_players();
-  int next_position = (m_position + num_players + 1) % num_players;
-  m_position = next_position;
+PlayerItr& PlayerItr::operator--()
+{
+  m_position = (m_position + Rules(m_hand_ptr).number_of_players())
+                  % Rules(m_hand_ptr).number_of_players();
   return *this;
+}
+
+PlayerItr PlayerItr::operator--(int)
+{
+  auto copy(*this);
+  --(*this); 
+  return copy;
+}
+
+bool PlayerItr::operator==(const PlayerItr& rhs) const
+{
+  return m_hand_ptr == rhs.m_hand_ptr && m_position == rhs.m_position;
+}
+
+bool PlayerItr::operator!=(const PlayerItr& rhs) const
+{
+  return !(*this == rhs);
 }
 
 } // namespace interface

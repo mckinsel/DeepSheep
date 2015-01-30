@@ -37,15 +37,18 @@ public:
   //! Serialize the Hand to an ostream.
   bool serialize(std::ostream* output) const;
   
-  //! Return true iff the Hand is in the playable state. 
+  //! Return true if the Hand is in the playable state. 
   bool is_playable() const;
   
-  //! Return true iff the Hand is in the arbitable state. 
+  //! Return true if the Hand is in the arbitable state. 
   bool is_arbitrable() const;
 
-  //! Return true iff the Hand is in the complete state. 
+  //! Return true if the Hand is in the complete state. 
   bool is_complete() const;
   
+  //! Get an iterator pointing to the player who dealt the Hand.
+  PlayerItr dealer() const;
+
   //! Get a specialized interface to the rule variant used by the Hand.
   Rules rules() const;
 
@@ -64,6 +67,6 @@ private:
 }; // class Hand
 
 } // namespace interface
-} // namespade sheepshead
+} // namespace sheepshead
 
 #endif
