@@ -6,6 +6,7 @@ before_install:
     - sudo apt-get update -qq
 
 install:
+    - sudo apt-get install libprotobuf-dev
     - sudo apt-get install protobuf-compiler
     - sudo apt-get install -qq gcc-4.8 g++-4.8
     - export CXX="g++-4.8"
