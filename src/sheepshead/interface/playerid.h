@@ -11,9 +11,11 @@
 namespace sheepshead {
 namespace interface {
 
+/// The class representing the way to identify a player of a Hand.
 class PlayerId
 {
 public:
+  /// Construct the null player.
   PlayerId();
   PlayerId(const PlayerId& from) = default;
   PlayerId& operator=(const PlayerId& from) = default;
@@ -31,8 +33,13 @@ private:
 
 }; // class PlayerId
 
+/// Iterator over players of a Hand.
+
+/** Note that this iterator is circular; it just wraps around to the first
+ *  player when it gets to the end, so there is not past-the-end iterator.
+ */
 class PlayerItr : 
-  public::std::iterator<std::forward_iterator_tag, PlayerId, int>
+  public::std::iterator<std::bidirectional_iterator_tag, PlayerId, int>
 {
 public:
   PlayerItr();
