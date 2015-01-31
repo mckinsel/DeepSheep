@@ -66,7 +66,7 @@ PlayerItr PlayerItr::operator++(int)
 
 PlayerItr& PlayerItr::operator--()
 {
-  m_position = (m_position + Rules(m_hand_ptr).number_of_players())
+  m_position = (m_position + Rules(m_hand_ptr).number_of_players() - 1)
                   % Rules(m_hand_ptr).number_of_players();
   return *this;
 }
