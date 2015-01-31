@@ -1,6 +1,8 @@
 LDLIBS+=-lgtest_main -lgtest -lpthread -lprotobuf
 CXXFLAGS=-g -I../src -std=c++11 -Wall -Wextra
 
+LIBSHEEPSHEAD=../build/libsheepshead.a
+
 .PHONY: all run proto interface clean
 
 all: run
@@ -31,8 +33,8 @@ $(INTERFACE_TESTS): $(INTERFACE_TEST_OBJS)
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-%: %.o
-	$(CXX) $< ../build/libsheepshead.a $(LDLIBS) -o $@
+%: %.o $(LIBSHEEPSHEAD)
+	$(CXX) $< $(LIBSHEEPSHEAD) $(LDLIBS) -o $@
 
 clean:
 	rm -rf $(PROTO_TESTS) $(PROTO_TEST_OBJS)
