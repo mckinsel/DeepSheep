@@ -52,10 +52,18 @@ std::vector<model::Card> Deck::deal(int number_of_cards)
 
 } // namespace internal
 
+Card::Card()
+  : m_hand_ptr(nullptr), m_card_ref(std::move(model::Card()))
+{}
 
 Card::Card(const ConstHandHandle& hand_ptr, model::Card card)
   : m_hand_ptr(hand_ptr), m_card_ref(card)
 {}
+
+bool Card::is_null() const
+{
+  return m_hand_ptr == nullptr;
+}
 
 bool Card::is_unknown() const
 {

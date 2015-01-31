@@ -27,11 +27,14 @@ private:
 class Card
 {
 public:
+  Card();
   Card(const ConstHandHandle& hand_ptr, model::Card card);
 
   enum class Suit {DIAMONDS, HEARTS, CLUBS, SPADES, TRUMP, UNKNOWN};
   enum class Rank {ACE, TEN, KING, QUEEN, JACK, NINE, EIGHT, SEVEN, UNKNOWN};
   
+  bool is_null() const;
+
   Suit suit() const;
   Rank rank() const;
 
