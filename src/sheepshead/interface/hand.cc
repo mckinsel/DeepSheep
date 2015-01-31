@@ -21,9 +21,19 @@ Hand::Hand(std::istream* input)
   m_hand_ptr->ParseFromIstream(input);
 }
 
+Hand::Hand(const std::string& input)
+{
+  m_hand_ptr->ParseFromString(input);
+}
+
 bool Hand::serialize(std::ostream* output) const
 {
   return m_hand_ptr->SerializeToOstream(output);
+}
+
+bool Hand::serialize(std::string* output) const
+{
+  return m_hand_ptr->SerializeToString(output);
 }
 
 PlayerItr Hand::dealer() const

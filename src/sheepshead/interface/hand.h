@@ -33,9 +33,15 @@ public:
 
   //! Construct a Hand by reading a previously serialized Hand from an istream.
   Hand(std::istream* input);
+
+  //! Construct a Hand from a Hand serialized to a string.
+  Hand(const std::string& input);
   
   //! Serialize the Hand to an ostream.
   bool serialize(std::ostream* output) const;
+
+  //! Serialize the Hand to a string
+  bool serialize(std::string* output) const;
   
   //! Return true if the Hand is in the playable state. 
   bool is_playable() const;
@@ -59,7 +65,7 @@ public:
   Playmaker playmaker(PlayerId);
 
   //! Get a specialized interface to apply the rules of Sheepshead to the Hand.
-  //Arbiter arbiter();
+  Arbiter arbiter();
    
 private:
   MutableHandHandle m_hand_ptr;
