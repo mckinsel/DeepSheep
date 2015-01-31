@@ -58,11 +58,14 @@ message PickingRound {
   repeated PickingDecision picking_decisions = 2;
 
   /// The parter decision made by the picker.
-  optional LonerDecision partner_decision = 3;
+  optional LonerDecision loner_decision = 3;
 
   /// The card that indicates which player is the partner.
   optional Card partner_card = 4;
+
+  /// Whether the picker has declared a card as unknown.
+  optional bool unknown_decision_made = 5;
   
   /// The cards discarded by the picker
-  repeated Card discarded_cards = 5;
+  repeated Card discarded_cards = 6;
 }
