@@ -35,25 +35,40 @@ public:
 
   //! Construct an interface to the PickingRound of a Hand.
   PickingRound(const Handle_T& hand_ptr);
-  
+
   //! Return an iterator to the first pick decision
   PickDecisionItr<Handle_T> pick_decisions_begin() const;
 
   //! Return an iterator past the last pick decision
   PickDecisionItr<Handle_T> pick_decisions_end() const;
 
-  //! Return the PlayerId of the player who picked.
-  
-  //! If no one picked, or no one has picked yet, return the null PlayerId.
-  PlayerId picker() const;
+  //! Return an iterator pointing to the player who decides to pick or pass first.
+  PlayerItr leader() const;
 
+  //! Return an iterator pointing to  the player who picked.
+
+  //! If no one picked, or no one has picked yet, return the null PlayerItr.
+  PlayerItr picker() const;
+
+  //! Return the decision the picker made about going alone.
   LonerDecision loner_decision() const;
-  
+
   //! Return the card selected by the picker as the partner card.
   Card partner_card() const;
 
+  //! Whether the picker declared a card unknown or decided not to.
+  bool unknown_decision_has_been_made() const;
+
+  //! The cards discarded by the picker.
+  std::vector<Card> discarded_cards() const;
+
+  //! Whether this is the notionally null PickingRound.
   bool is_null() const;
+
+  //! Whether the PickingRound has started, even if no decisions have been made yet.
   bool is_started() const;
+
+  //! Whether the PickingRound is finished, and Tricks can begin.
   bool is_finished() const;
 
 private:
@@ -91,5 +106,5 @@ private:
 }; // class PickDecisionItr
 
 } // namespace interface
-} // namespade sheepshead
+} // namespace sheepshead
 #endif
