@@ -20,3 +20,10 @@ TEST(TestHandInterface, TestDefaultConstructor)
   auto&& trick = *trick_itr;
   EXPECT_FALSE(trick.is_started());
 }
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  auto results = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return results;
+}

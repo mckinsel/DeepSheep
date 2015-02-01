@@ -33,7 +33,6 @@ TEST(TestPlayerId, TestCircular)
     ++itr;
     EXPECT_FALSE((*itr).is_null());
   }
-
 }
 
 TEST(TestPlayerId, TestCopy)
@@ -63,4 +62,11 @@ TEST(TestPlayerId, TestBidirectional)
 
   EXPECT_TRUE(itr == std::prev(itr, num_players));
   EXPECT_TRUE(std::next(itr, 1) == std::prev(itr, num_players - 1));
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  auto results = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return results;
 }
