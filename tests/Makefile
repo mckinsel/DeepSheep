@@ -7,6 +7,9 @@ LIBSHEEPSHEAD=../build/libsheepshead.a
 
 all: run
 
+valgrind: interface proto
+	@(for test_exe in $(ALL_TESTS); do valgrind --leak-check=full --log-file=./$$test_exe.valgrind ./$$test_exe; done)
+
 ALL_TESTS = $(INTERFACE_TESTS) $(PROTO_TESTS)
 
 run: interface proto
@@ -39,3 +42,4 @@ $(INTERFACE_TESTS): $(INTERFACE_TEST_OBJS)
 clean:
 	rm -rf $(PROTO_TESTS) $(PROTO_TEST_OBJS)
 	rm -rf $(INTERFACE_TESTS) $(INTERFACE_TEST_OBJS)
+	find . -name "*.valgrind" | xargs rm -f
