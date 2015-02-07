@@ -60,6 +60,11 @@ doc:
 test:
 	$(MAKE) -C tests/
 
+testclean:
+	$(MAKE) clean -C tests/
+
+testvalgrind:
+	$(MAKE) valgrind -C tests/
 
 clean:
 	rm -rf $(INTERFACE_OBJS)
