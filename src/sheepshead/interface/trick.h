@@ -4,7 +4,8 @@
 #include "sheepshead/proto/game.pb.h"
 
 #include "sheepshead/interface/handle_types.h"
-//#include "sheepshead/interface/playerid.h"
+#include "sheepshead/interface/playerid.h"
+#include "sheepshead/interface/deck.h"
 
 #include <iterator>
 #include <memory>
@@ -28,20 +29,28 @@ public:
   Trick(const Handle_T& hand_ptr, int trick_number) 
     : m_hand_ptr(hand_ptr), m_trick_number(trick_number) {}
 
-  //! Return true  if the Trick wraps a null trick, a conceptually non-existent trick.
+  //! Return true if the Trick wraps a null trick, a conceptually non-existent trick.
   bool is_null() const;
   
   /// Return true if the Trick has started.
 
-  //! Even if no cards for the trick have been played yet, will return true if
-  //! the trick has been created in the model.
+  //! Even if no cards for the trick have been played yet, will
+  //! return true if the trick has been created in the model.
   bool is_started() const; 
 
   //! Return true if all cards for the Trick have been played.
   bool is_finished() const;
   
-  //! Return the PlayerId of the player who plays the first card of the Trick.
-  //PlayerId leader() const;
+  //! Return an iterator pointing to the player who led.
+  PlayerItr leader() const;
+
+  //! Return an iterator pointing to the first card played in the trick.
+  CardItr laid_cards_begin() const;
+
+  //! Return an iterator pointing past the end of cards played in the trick.
+  CardItr laid_cards_end() const;
+
+  int number_of_laid_cards() const;
 
   //! Return the PlayerId of the player who won the Trick.
 
@@ -60,7 +69,8 @@ private:
 /// An iterator over the Tricks of a Hand History.
 template<typename Handle_T>
 class TrickItr
-  : public std::iterator<std::forward_iterator_tag, Trick<Handle_T>, int>
+  : public std::iterator<std::bidirectional_iterator_tag,
+                         Trick<Handle_T>, int>
 {
 public:
   TrickItr();
@@ -69,12 +79,15 @@ public:
 
   TrickItr(const Handle_T& hand_ptr, int trick_number);
   
+  bool is_null() const;
+
   TrickItr& operator++();
   TrickItr operator++(int);
   TrickItr& operator--();
   TrickItr operator--(int);
 
   Trick<Handle_T>& operator*();
+  Trick<Handle_T>* operator->();
 
   bool operator==(const TrickItr& rhs) const;
   bool operator!=(const TrickItr& rhs) const;
