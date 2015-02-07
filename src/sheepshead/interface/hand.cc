@@ -56,6 +56,16 @@ Seat Hand::seat(PlayerId playerid) const
   return Seat(m_hand_ptr, playerid);
 }
 
+Playmaker Hand::playmaker(PlayerId playerid)
+{
+  return Playmaker(m_hand_ptr, playerid);
+}
+
+Arbiter Hand::arbiter()
+{
+  return Arbiter(m_hand_ptr);
+}
+
 bool Hand::is_playable() const
 {
   return Arbiter(m_hand_ptr).is_playable();
@@ -69,11 +79,6 @@ bool Hand::is_arbitrable() const
 bool Hand::is_finished() const
 {
   return Arbiter(m_hand_ptr).is_finished();
-}
-
-Arbiter Hand::arbiter()
-{
-  return Arbiter(m_hand_ptr);
 }
 
 } // namespace interface
