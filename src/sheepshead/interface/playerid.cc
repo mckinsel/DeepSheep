@@ -39,20 +39,37 @@ PlayerItr::PlayerItr()
 PlayerItr::PlayerItr(const ConstHandHandle& hand_ptr, int position)
   : m_hand_ptr(hand_ptr), m_position(position)
 {
-  assert(m_position < Rules(m_hand_ptr).number_of_players());
+  assert(m_position < Rules(hand_ptr).number_of_players());
   assert(m_position >= 0);
 }
 
 PlayerId& PlayerItr::operator*()
 {
+  if(this->is_null()) {
+    m_playerid = PlayerId();
+    return m_playerid;
+  }
+
   assert(m_position < Rules(m_hand_ptr).number_of_players());
   assert(m_position >= 0);
   m_playerid = PlayerId(m_hand_ptr, m_position);
   return m_playerid;
 }
 
+bool PlayerItr::is_null() const
+{
+  return m_hand_ptr == nullptr;
+}
+
+PlayerId* PlayerItr::operator->()
+{
+  return &(operator*());
+}
+
 PlayerItr& PlayerItr::operator++()
 {
+  if(this->is_null()) return *this;
+
   m_position = (m_position + 1) % Rules(m_hand_ptr).number_of_players();
   return *this;
 }
@@ -66,6 +83,8 @@ PlayerItr PlayerItr::operator++(int)
 
 PlayerItr& PlayerItr::operator--()
 {
+  if(this->is_null()) return *this;
+
   m_position = (m_position + Rules(m_hand_ptr).number_of_players() - 1)
                   % Rules(m_hand_ptr).number_of_players();
   return *this;

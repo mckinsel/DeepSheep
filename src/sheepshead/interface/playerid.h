@@ -28,6 +28,7 @@ public:
   bool operator!=(const PlayerId& rhs) const;
 
 private:
+  friend class Seat;
   ConstHandHandle m_hand_ptr;
   int m_position;
 
@@ -47,8 +48,11 @@ public:
   PlayerItr& operator=(const PlayerItr& from) = default;
 
   PlayerItr(const ConstHandHandle& hand_ptr, int position);
-  
+
+  bool is_null() const;
+
   PlayerId& operator*();
+  PlayerId* operator->();
 
   PlayerItr& operator++();
   PlayerItr operator++(int);
