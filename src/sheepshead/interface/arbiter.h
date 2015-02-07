@@ -12,10 +12,14 @@ public:
 
   void arbitrate();
 
+  bool is_playable() const;
+  bool is_arbitrable() const;
+  bool is_finished() const;
+
 private:
   friend class Hand;
   Arbiter(const MutableHandHandle& hand_ptr);
-  const MutableHandHandle m_hand_ptr;
+  MutableHandHandle m_hand_ptr;
 
 }; // class Arbiter
 
