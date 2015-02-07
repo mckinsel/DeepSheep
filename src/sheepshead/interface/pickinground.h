@@ -43,6 +43,8 @@ public:
   PickDecisionItr<Handle_T> pick_decisions_end() const;
 
   //! Return an iterator pointing to the player who decides to pick or pass first.
+
+  //! If the round has not yet started, return the null PlayerItr.
   PlayerItr leader() const;
 
   //! Return an iterator pointing to  the player who picked.
@@ -58,6 +60,9 @@ public:
 
   //! Whether the picker declared a card unknown or decided not to.
   bool unknown_decision_has_been_made() const;
+
+  //! The cards in the blinds
+  std::vector<Card> blinds() const;
 
   //! The cards discarded by the picker.
   std::vector<Card> discarded_cards() const;

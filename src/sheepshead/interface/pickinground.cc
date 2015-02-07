@@ -18,6 +18,8 @@ PickingRound<Handle_T>::PickingRound(const Handle_T& hand_ptr)
 template<typename Handle_T>
 PickDecisionItr<Handle_T> PickingRound<Handle_T>::pick_decisions_begin() const
 {
+  if(this->is_null()) return PickDecisionItr<Handle_T>();
+
   auto itr = PickDecisionItr<Handle_T>(m_hand_ptr, 0);
   return itr;
 }
@@ -25,6 +27,8 @@ PickDecisionItr<Handle_T> PickingRound<Handle_T>::pick_decisions_begin() const
 template<typename Handle_T>
 PickDecisionItr<Handle_T> PickingRound<Handle_T>::pick_decisions_end() const
 {
+  if(this->is_null()) return PickDecisionItr<Handle_T>();
+
   auto itr = PickDecisionItr<Handle_T>(m_hand_ptr, Rules(m_hand_ptr).number_of_players());
   return itr;
 }
@@ -40,6 +44,8 @@ PlayerItr PickingRound<Handle_T>::leader() const
 template<typename Handle_T>
 PlayerItr PickingRound<Handle_T>::picker() const
 {
+  if(this->is_null()) return PlayerItr();
+
   auto first = this->pick_decisions_begin();
   auto last = this->pick_decisions_end();
   auto player_itr = this->leader();
@@ -59,6 +65,7 @@ template<typename Handle_T>
 LonerDecision PickingRound<Handle_T>::loner_decision() const
 {
   if(this->is_null()) return LonerDecision::NONE;
+
   if(!m_hand_ptr->picking_round().has_loner_decision()) return LonerDecision::NONE;
 
   switch(m_hand_ptr->picking_round().loner_decision()) {
@@ -71,6 +78,7 @@ template<typename Handle_T>
 Card PickingRound<Handle_T>::partner_card() const
 {
   if(this->is_null()) return Card();
+
   if(!m_hand_ptr->picking_round().has_partner_card()) return Card();
 
   return Card(m_hand_ptr, m_hand_ptr->picking_round().partner_card());
@@ -79,13 +87,29 @@ Card PickingRound<Handle_T>::partner_card() const
 template<typename Handle_T>
 bool PickingRound<Handle_T>::unknown_decision_has_been_made() const
 {
+  if(this->is_null()) return false;
+
   return m_hand_ptr->picking_round().has_unknown_decision_made();
+}
+
+template<typename Handle_T>
+std::vector<Card> PickingRound<Handle_T>::blinds() const
+{
+  std::vector<Card> output;
+  if(this->is_null()) return output;
+
+  for(auto& model_card : m_hand_ptr->picking_round().blinds()) {
+    output.push_back(Card(m_hand_ptr, model_card));
+  }
+
+  return output;
 }
 
 template<typename Handle_T>
 std::vector<Card> PickingRound<Handle_T>::discarded_cards() const
 {
   std::vector<Card> output;
+  if(this->is_null()) return output;
 
   for(auto& model_card : m_hand_ptr->picking_round().discarded_cards()) {
     output.push_back(Card(m_hand_ptr, model_card));
@@ -103,6 +127,7 @@ bool PickingRound<Handle_T>::is_null() const
 template<typename Handle_T>
 bool PickingRound<Handle_T>::is_started() const
 {
+  if(this->is_null()) return false;
   return m_hand_ptr->has_picking_round();
 }
 
@@ -120,12 +145,13 @@ bool PickingRound<Handle_T>::is_finished() const
   }
 
   // Or someone has picked and made all decisions
-  if(!((*this->picker()).is_null()) &&
-     !(this->loner_decision() == LonerDecision::NONE) &&
-      (this->unknown_decision_has_been_made()) &&
-     !(this->partner_card().is_null()) &&
+  if(!(this->picker()->is_null()) && // There is a picker
+     !(this->loner_decision() == LonerDecision::NONE) && // He's made a loner decision
+      (this->unknown_decision_has_been_made()) && // He's made the unknown decision
+     !(this->partner_card().is_null()) && // He's made the partner card decision
       (this->discarded_cards().size() ==
           static_cast<size_t>(Rules(m_hand_ptr).number_of_cards_in_blinds())))
+                                          // He's discarded
     return true;
 
   return false;
@@ -136,7 +162,7 @@ template class PickingRound<MutableHandHandle>;
 
 
 template<typename Handle_T>
-PickDecisionItr<Handle_T>::PickDecisionItr()  : m_hand_ptr(nullptr), m_decision_number(-1)
+PickDecisionItr<Handle_T>::PickDecisionItr()
   : m_hand_ptr(nullptr), m_decision_number(-1)
 {}
 
@@ -178,6 +204,11 @@ PickDecisionItr<Handle_T> PickDecisionItr<Handle_T>::operator--(int)
 template<typename Handle_T>
 PickDecision& PickDecisionItr<Handle_T>::operator*()
 {
+  if(m_hand_ptr == nullptr) {
+    m_pick_decision = PickDecision::UNASKED;
+    return m_pick_decision;
+  }
+
   if(m_decision_number >= m_hand_ptr->picking_round().picking_decisions_size() ||
      m_decision_number < 0) {
       m_pick_decision = PickDecision::UNASKED;
