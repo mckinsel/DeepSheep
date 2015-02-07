@@ -138,6 +138,47 @@ bool Play::operator!=(const Play& rhs) const
   return !(*this == rhs);
 }
 
+Play::PlayType Play::play_type() const
+{
+  return m_play_tag;
+}
+
+const PickDecision* Play::pick_decision() const
+{
+  if(m_play_tag != PlayType::PICK) return nullptr;
+  return &m_pick_decision;
+}
+
+const LonerDecision* Play::loner_decision() const
+{
+  if(m_play_tag != PlayType::LONER) return nullptr;
+  return &m_loner_decision;
+}
+
+const Card* Play::partner_decision() const
+{
+  if(m_play_tag != PlayType::PARTNER) return nullptr;
+  return &m_card_decision;
+}
+
+const Card* Play::trick_card_decision() const
+{
+  if(m_play_tag != PlayType::TRICK_CARD) return nullptr;
+  return &m_card_decision;
+}
+
+const std::pair<Card, Card::Suit>* Play::unknown_decision() const
+{
+  if(m_play_tag != PlayType::UNKNOWN) return nullptr;
+  return &m_unknown_decision;
+}
+
+const std::vector<Card>* Play::discard_decision() const
+{
+  if(m_play_tag != PlayType::DISCARD) return nullptr;
+  return &m_discard_decision;
+}
+
 // end Play
 
 // Playmaker
@@ -160,6 +201,61 @@ std::vector<Play> Playmaker::available_plays() const
   }
 
   return plays;
+}
+
+bool make_pick_play(MutableHandHandle hand_ptr,
+                    const Play& play)
+{
+  if(*play.pick_decision() == PickDecision::PICK) {
+    hand_ptr->mutable_picking_round()->add_picking_decisions(model::PickingRound::PICK);
+  } else if(*play.pick_decision() == PickDecision::PASS) {
+    hand_ptr->mutable_picking_round()->add_picking_decisions(model::PickingRound::PASS);
+  } else {
+    return false;
+  }
+  return true;
+}
+
+bool Playmaker::make_play(const Play& play)
+{
+  PlayerId ready_player;
+
+  switch(play.play_type()) {
+    case Play::PlayType::PICK :
+      ready_player = internal::ready_for_pick_play(m_hand_ptr);
+      if(ready_player != m_playerid)
+        return false;
+      return make_pick_play(m_hand_ptr, play);
+      break;
+    case Play::PlayType::LONER :
+      ready_player = internal::ready_for_loner_play(m_hand_ptr);
+      if(ready_player != m_playerid)
+        return false;
+      break;
+    case Play::PlayType::PARTNER :
+      ready_player = internal::ready_for_partner_play(m_hand_ptr);
+      if(ready_player != m_playerid)
+        return false;
+      break;
+    case Play::PlayType::UNKNOWN :
+      ready_player = internal::ready_for_unknown_play(m_hand_ptr);
+      if(ready_player != m_playerid)
+        return false;
+      break;
+    case Play::PlayType::DISCARD :
+      ready_player = internal::ready_for_discard_play(m_hand_ptr);
+      if(ready_player != m_playerid)
+        return false;
+      break;
+    case Play::PlayType::TRICK_CARD :
+      ready_player = internal::ready_for_trick_play(m_hand_ptr);
+      if(ready_player != m_playerid)
+        return false;
+      break;
+    default:
+      assert(!"Oh no, a mystery play");
+  }
+  return false;
 }
 
 } // namespace interface

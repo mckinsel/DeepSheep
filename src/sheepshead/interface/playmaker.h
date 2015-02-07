@@ -42,6 +42,15 @@ public:
   bool operator==(const Play& rhs) const;
   bool operator!=(const Play& rhs) const;
 
+  // Accessors for play type and the play itself.
+  PlayType play_type() const;
+  const PickDecision* pick_decision() const;
+  const LonerDecision* loner_decision() const;
+  const Card* partner_decision() const;
+  const Card* trick_card_decision() const;
+  const std::pair<Card, Card::Suit>* unknown_decision() const;
+  const std::vector<Card>* discard_decision() const;
+
 private:
 
   PlayType m_play_tag;
@@ -59,7 +68,7 @@ private:
 class Playmaker
 {
 public:
-  void make_play(const Play& play);
+  bool make_play(const Play& play);
   std::vector<Play> available_plays() const;
 
 private:
