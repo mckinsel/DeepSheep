@@ -7,6 +7,8 @@
 #include <chrono>
 #include <random>
 
+#include <iostream>
+
 namespace sheepshead {
 namespace interface {
 namespace internal {
@@ -45,7 +47,8 @@ void Deck::shuffle_deck()
 
 std::vector<model::Card> Deck::deal(int number_of_cards)
 {
-  std::vector<model::Card> output_cards(m_deck.begin(), m_deck.begin() + number_of_cards);
+  std::vector<model::Card> output_cards(m_deck.begin(),
+                                        m_deck.begin() + number_of_cards);
   m_deck.erase(m_deck.begin(), m_deck.begin() + number_of_cards);
   return output_cards;
 }
@@ -53,12 +56,44 @@ std::vector<model::Card> Deck::deal(int number_of_cards)
 } // namespace internal
 
 Card::Card()
-  : m_hand_ptr(nullptr), m_card_ref(std::move(model::Card()))
-{}
+  : m_hand_ptr(nullptr)
+{
+  m_model_card_ptr = decltype(m_model_card_ptr)
+                     (new model::Card(model::Card::default_instance()));
+}
 
-Card::Card(const ConstHandHandle& hand_ptr, model::Card card)
-  : m_hand_ptr(hand_ptr), m_card_ref(card)
-{}
+Card::Card(const ConstHandHandle& hand_ptr,
+           const model::Card& card)
+  : m_hand_ptr(hand_ptr)
+{
+  m_model_card_ptr = decltype(m_model_card_ptr)(new model::Card(card));
+}
+
+Card::Card(const Card& from)
+{
+  m_hand_ptr = from.m_hand_ptr;
+  m_model_card_ptr = decltype(m_model_card_ptr)
+                     (new model::Card(*from.m_model_card_ptr));
+}
+
+Card& Card::operator=(const Card& from)
+{
+  m_hand_ptr = from.m_hand_ptr;
+  m_model_card_ptr = decltype(m_model_card_ptr)
+                     (new model::Card(*from.m_model_card_ptr));
+  return *this;
+}
+
+bool Card::operator==(const Card& rhs) const
+{
+  return m_model_card_ptr->rank() == rhs.m_model_card_ptr->rank() &&
+         m_model_card_ptr->suit() == rhs.m_model_card_ptr->suit();
+}
+
+bool Card::operator!=(const Card& rhs) const
+{
+  return !(*this == rhs);
+}
 
 bool Card::is_null() const
 {
@@ -67,7 +102,7 @@ bool Card::is_null() const
 
 bool Card::is_unknown() const
 {
-  return m_card_ref.unknown();
+  return m_model_card_ptr->unknown();
 }
 
 Card::Suit Card::suit() const
@@ -102,7 +137,7 @@ bool Card::is_trump() const
 
 Card::Suit Card::true_suit() const
 {
-  switch(m_card_ref.suit()) {
+  switch(m_model_card_ptr->suit()) {
     case model::DIAMONDS : return Card::Suit::DIAMONDS;
     case model::HEARTS : return Card::Suit::HEARTS;
     case model::CLUBS : return Card::Suit::CLUBS;
@@ -118,7 +153,7 @@ Card::Rank Card::rank() const
 
 Card::Rank Card::true_rank() const
 {
-  switch(m_card_ref.rank()) {
+  switch(m_model_card_ptr->rank()) {
     case model::ACE : return Card::Rank::ACE;
     case model::TEN : return Card::Rank::TEN;
     case model::KING : return Card::Rank::KING;
@@ -140,6 +175,74 @@ int Card::point_value() const
     case Rank::JACK : return 2;
     default: return 0;
   }
+}
+
+// CardItr
+
+CardItr::CardItr()
+  : m_hand_ptr(nullptr)
+{}
+
+CardItr::CardItr(const ConstHandHandle& hand_ptr,
+                 const ModelCardItr& model_card_itr)
+  : m_model_card_itr(model_card_itr), m_hand_ptr(hand_ptr)
+{}
+
+bool CardItr::is_null() const
+{
+  return m_hand_ptr == nullptr;
+}
+
+CardItr& CardItr::operator++()
+{
+  if(this->is_null()) return *this;
+
+  m_model_card_itr++;
+  return *this;
+}
+
+CardItr CardItr::operator++(int)
+{
+  auto copy(*this);
+  ++(*this);
+  return copy;
+}
+
+CardItr& CardItr::operator--()
+{
+  if(this->is_null()) return *this;
+
+  m_model_card_itr--;
+  return *this;
+}
+
+CardItr CardItr::operator--(int)
+{
+  auto copy(*this);
+  --(*this);
+  return copy;
+}
+
+Card& CardItr::operator*()
+{
+  m_card = Card(m_hand_ptr, *m_model_card_itr);
+  return m_card;
+}
+
+Card* CardItr::operator->()
+{
+  return &(operator*());
+}
+
+bool CardItr::operator==(const CardItr& rhs) const
+{
+  return m_hand_ptr == rhs.m_hand_ptr &&
+         m_model_card_itr == rhs.m_model_card_itr;
+}
+
+bool CardItr::operator!=(const CardItr& rhs) const
+{
+  return !(*this == rhs);
 }
 
 } // namespace interface
