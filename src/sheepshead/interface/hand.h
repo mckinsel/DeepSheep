@@ -9,6 +9,8 @@
 #include "sheepshead/interface/playmaker.h"
 #include "sheepshead/interface/playerid.h"
 #include "sheepshead/interface/arbiter.h"
+#include "sheepshead/interface/seat.h"
+#include "sheepshead/interface/pickinground.h"
 
 #include <iostream>
 #include <memory>
@@ -49,8 +51,8 @@ public:
   //! Return true if the Hand is in the arbitable state. 
   bool is_arbitrable() const;
 
-  //! Return true if the Hand is in the complete state. 
-  bool is_complete() const;
+  //! Return true if the Hand is in the finished state.
+  bool is_finished() const;
   
   //! Get an iterator pointing to the player who dealt the Hand.
   PlayerItr dealer() const;
@@ -60,6 +62,9 @@ public:
 
   //! Get a specialized interface to the history of play so far in the Hand.
   History history() const;
+
+  //! Get the interface to a seat of the Hand.
+  Seat seat(PlayerId playerid) const;
 
   //! Get a specialized interface for a player to change the state of the Hand
   Playmaker playmaker(PlayerId);

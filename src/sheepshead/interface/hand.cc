@@ -51,20 +51,29 @@ History Hand::history() const
   return History(m_hand_ptr);
 }
 
-// TODO: Implement Hand state methods
+Seat Hand::seat(PlayerId playerid) const
+{
+  return Seat(m_hand_ptr, playerid);
+}
+
 bool Hand::is_playable() const
 {
-  return false;
+  return Arbiter(m_hand_ptr).is_playable();
 }
 
 bool Hand::is_arbitrable() const
 {
-  return false;
+  return Arbiter(m_hand_ptr).is_arbitrable();
 }
 
-bool Hand::is_complete() const
+bool Hand::is_finished() const
 {
-  return false;
+  return Arbiter(m_hand_ptr).is_finished();
+}
+
+Arbiter Hand::arbiter()
+{
+  return Arbiter(m_hand_ptr);
 }
 
 } // namespace interface
