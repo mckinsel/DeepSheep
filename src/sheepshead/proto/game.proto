@@ -68,4 +68,7 @@ message PickingRound {
   
   /// The cards discarded by the picker
   repeated Card discarded_cards = 6;
+
+  /// The cards in the blinds
+  repeated Card blinds = 7;
 }
