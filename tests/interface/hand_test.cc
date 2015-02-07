@@ -15,10 +15,15 @@ TEST(TestHandInterface, TestDefaultConstructor)
   EXPECT_FALSE(picking_round.is_finished());
   
   EXPECT_EQ(history.number_of_started_tricks(), 0);
+  EXPECT_EQ(history.number_of_finished_tricks(), 0);
 
-  auto trick_itr = history.tricks_cbegin();
+  auto trick_itr = history.tricks_begin();
   auto&& trick = *trick_itr;
   EXPECT_FALSE(trick.is_started());
+
+  EXPECT_FALSE(hand.is_playable());
+  EXPECT_TRUE(hand.is_arbitrable());
+  EXPECT_FALSE(hand.is_finished());
 }
 
 int main(int argc, char **argv) {
