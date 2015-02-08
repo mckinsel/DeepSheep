@@ -62,7 +62,8 @@ void choose_all_pass(sheepshead::interface::Hand* hand)
   } while(*player_itr != leader);
 }
 
-// Test that the hand become unplayable when everyone passes
+// Test that the hand becomes arbitrable when everyone passes and the rules say
+// leasters
 TEST(TestPlaymaker, TestAllPassLeasters)
 {
   auto mutable_rules = sheepshead::interface::MutableRules();
@@ -77,6 +78,8 @@ TEST(TestPlaymaker, TestAllPassLeasters)
   EXPECT_TRUE(hand.is_arbitrable());
 }
 
+// Test that the hand becomes finished when everyone passes and the rules say
+// doubler
 TEST(TestPlaymaker, TestAllPassDoubler)
 {
   auto mutable_rules = sheepshead::interface::MutableRules();
@@ -91,6 +94,7 @@ TEST(TestPlaymaker, TestAllPassDoubler)
   EXPECT_FALSE(hand.is_arbitrable());
 }
 
+// Test that the last picker is forced to pick when the rules say forced pick
 TEST(TestPlaymaker, TestForcedPick)
 {
   auto mutable_rules = sheepshead::interface::MutableRules();
@@ -116,6 +120,55 @@ TEST(TestPlaymaker, TestForcedPick)
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(*(available_plays[0].pick_decision()),
             sheepshead::interface::PickDecision::PICK);
+}
+
+void check_proper_loner(const std::vector<sheepshead::interface::Play>& plays)
+{
+  EXPECT_EQ(plays.size(), 2);
+  // Both should be of LONER type
+  EXPECT_TRUE(plays[0].play_type() ==
+                       sheepshead::interface::Play::PlayType::LONER &&
+              plays[1].play_type() ==
+                       sheepshead::interface::Play::PlayType::LONER);
+  int loner_count = std::count_if(plays.begin(), plays.end(),
+      [](sheepshead::interface::Play p){return *(p.loner_decision()) ==
+         sheepshead::interface::LonerDecision::LONER;});
+  int partner_count = std::count_if(plays.begin(), plays.end(),
+      [](sheepshead::interface::Play p){return *(p.loner_decision()) ==
+         sheepshead::interface::LonerDecision::PARTNER;});
+  EXPECT_EQ(loner_count, 1);
+  EXPECT_EQ(partner_count, 1);
+}
+
+// Test that picking transitions the hand to requiring a loner decision
+TEST(TestPlaymaker, TestPickLeadsToLoner)
+{
+  auto hand = sheepshead::interface::Hand();
+  hand.arbiter().arbitrate();
+
+  auto pick_play = sheepshead::interface::Play(
+      sheepshead::interface::Play::PlayType::PICK,
+      sheepshead::interface::PickDecision::PICK);
+  auto pass_play = sheepshead::interface::Play(
+      sheepshead::interface::Play::PlayType::PICK,
+      sheepshead::interface::PickDecision::PASS);
+
+  auto player_itr = hand.history().picking_round().leader();
+  EXPECT_TRUE(hand.playmaker(*player_itr).make_play(pick_play));
+  EXPECT_TRUE(hand.is_playable());
+  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  check_proper_loner(available_plays);
+
+  // Now try again, but not having the leader pick
+  auto second_hand = sheepshead::interface::Hand();
+  second_hand.arbiter().arbitrate();
+  player_itr = second_hand.history().picking_round().leader();
+  EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(pass_play));
+  ++player_itr;
+  EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(pick_play));
+  EXPECT_TRUE(second_hand.is_playable());
+  available_plays = second_hand.playmaker(*player_itr).available_plays();
+  check_proper_loner(available_plays);
 }
 
 int main(int argc, char **argv) {
