@@ -7,6 +7,13 @@ namespace internal {
 /// Return true if the Hand is complete, and no more plays or rule applications are possible.
 bool is_finished(const ConstHandHandle& hand_ptr)
 {
+  // A hand where 1) the picking round is finished 2) nobody picked 3) no
+  // pickers are doublers is done
+  if(Rules(hand_ptr).no_picker_doubler() &&
+     History(hand_ptr).picking_round().is_finished() &&
+     History(hand_ptr).picking_round().picker().is_null())
+    return true;
+
   if(Rules(hand_ptr).number_of_cards_per_player() > History(hand_ptr).number_of_finished_tricks())
     return false;
   return History(hand_ptr).latest_trick().is_finished();
