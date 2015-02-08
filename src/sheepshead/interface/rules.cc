@@ -3,15 +3,9 @@
 namespace sheepshead {
 namespace interface {
 
-Rules::Rules()
-{
-  // Just use the defaults defined in the proto file.
-}
-
 Rules::Rules(const ConstHandHandle& hand_ptr)
   : m_hand_ptr(hand_ptr)
-{
-}
+{}
 
 int Rules::number_of_players() const
 {
@@ -109,6 +103,63 @@ bool Rules::crack_allowed() const
 bool Rules::recrack_allowed() const
 {
   return false;
+}
+
+// MutableRules
+
+MutableRules::MutableRules()
+{
+  m_hand_ptr = std::unique_ptr<model::Hand>(new model::Hand);
+}
+
+Rules MutableRules::get_rules() const
+{
+  auto const_hand_ptr = std::make_shared<const sheepshead::model::Hand>
+                                  (*m_hand_ptr);
+  return Rules(const_hand_ptr);
+}
+
+void MutableRules::set_number_of_players(int number_of_players)
+{
+  if(3 <= number_of_players && number_of_players <= 5) {
+    m_hand_ptr->mutable_rule_variation()->set_num_players(number_of_players);
+  }
+}
+
+void MutableRules::set_partner_by_called_ace()
+{
+  m_hand_ptr->mutable_rule_variation()->set_partner_method(model::CALLED_ACE);
+}
+
+void MutableRules::set_partner_by_jack_of_diamonds()
+{
+  m_hand_ptr->mutable_rule_variation()->set_partner_method(model::JACK_OF_DIAMONDS);
+}
+
+
+void MutableRules::set_no_picker_leasters()
+{
+  m_hand_ptr->mutable_rule_variation()->set_no_picker_result(model::LEASTERS);
+}
+
+void MutableRules::set_no_picker_doubler()
+{
+  m_hand_ptr->mutable_rule_variation()->set_no_picker_result(model::DOUBLER);
+}
+
+void MutableRules::set_no_picker_forced_pick()
+{
+  m_hand_ptr->mutable_rule_variation()->set_no_picker_result(model::FORCED_PICK);
+}
+
+void MutableRules::set_trump_is_diamonds()
+{
+  m_hand_ptr->mutable_rule_variation()->set_trump_suit(model::DIAMONDS);
+}
+
+void MutableRules::set_trump_is_clubs()
+{
+  m_hand_ptr->mutable_rule_variation()->set_trump_suit(model::CLUBS);
 }
 
 } // namespace interface

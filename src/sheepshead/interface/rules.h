@@ -13,9 +13,6 @@ class Rules
 {
 public:
   
-  //! Construct an interface to the default rule variation
-  Rules();
-
   //! Construct an interface to the rules of a hand
   Rules(const ConstHandHandle& hand_handle);
   
@@ -54,10 +51,33 @@ public:
 
 private:
   friend class Hand;
-  friend class RulesBuilder;
-  const ConstHandHandle m_hand_ptr;
+  ConstHandHandle m_hand_ptr;
 
 }; // class Rules
+
+class MutableRules
+{
+public:
+  MutableRules();
+
+  Rules get_rules() const;
+
+  void set_number_of_players(int number_of_players);
+
+  void set_partner_by_called_ace();
+  void set_partner_by_jack_of_diamonds();
+
+  void set_no_picker_leasters();
+  void set_no_picker_doubler();
+  void set_no_picker_forced_pick();
+
+  void set_trump_is_diamonds();
+  void set_trump_is_clubs();
+
+private:
+  std::unique_ptr<model::Hand> m_hand_ptr;
+
+}; // MutableRules
 
 } // namespace interface
 } // namespade sheepshead
