@@ -103,11 +103,11 @@ PlayerId ready_for_loner_play(const ConstHandHandle& hand_ptr)
   if(picking_round.is_finished()) return PlayerId();
 
   // If there's no picker, then we're not ready for a loner play
-  if((*picking_round.picker()).is_null()) return PlayerId();
+  if(picking_round.picker().is_null()) return PlayerId();
 
   // There is a picker, so see if he's decided about going alone yet.
   if(picking_round.loner_decision() == LonerDecision::NONE) {
-    return  *picking_round.picker();
+    return *picking_round.picker();
   } else {
     return PlayerId();
   }
