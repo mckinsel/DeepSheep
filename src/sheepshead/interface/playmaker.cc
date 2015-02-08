@@ -217,10 +217,22 @@ std::vector<Play> Playmaker::available_plays() const
 
 bool make_pick_play(MutableHandHandle hand_ptr, const Play& play)
 {
+  // When someone picks, they also pick up the blinds
   if(*play.pick_decision() == PickDecision::PICK) {
+    int picker_position = (hand_ptr->picking_round().picking_decisions_size() -
+                           hand_ptr->picking_round().leader_position()) %
+                          Rules(hand_ptr).number_of_players();
+    auto seat = hand_ptr->mutable_seats(picker_position);
+    for(auto& model_card : hand_ptr->picking_round().blinds()) {
+      auto new_card = seat->add_held_cards();
+      *new_card = model_card;
+    }
+    hand_ptr->mutable_picking_round()->clear_blinds();
     hand_ptr->mutable_picking_round()->add_picking_decisions(model::PickingRound::PICK);
+
   } else if(*play.pick_decision() == PickDecision::PASS) {
     hand_ptr->mutable_picking_round()->add_picking_decisions(model::PickingRound::PASS);
+
   } else {
     return false;
   }

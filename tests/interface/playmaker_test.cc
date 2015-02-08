@@ -155,6 +155,7 @@ TEST(TestPlaymaker, TestPickLeadsToLoner)
 
   auto player_itr = hand.history().picking_round().leader();
   EXPECT_TRUE(hand.playmaker(*player_itr).make_play(pick_play));
+  EXPECT_EQ(hand.seat(*player_itr).number_of_held_cards(), 8);
   EXPECT_TRUE(hand.is_playable());
   auto available_plays = hand.playmaker(*player_itr).available_plays();
   check_proper_loner(available_plays);
@@ -166,6 +167,7 @@ TEST(TestPlaymaker, TestPickLeadsToLoner)
   EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(pass_play));
   ++player_itr;
   EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(pick_play));
+  EXPECT_EQ(second_hand.seat(*player_itr).number_of_held_cards(), 8);
   EXPECT_TRUE(second_hand.is_playable());
   available_plays = second_hand.playmaker(*player_itr).available_plays();
   check_proper_loner(available_plays);
