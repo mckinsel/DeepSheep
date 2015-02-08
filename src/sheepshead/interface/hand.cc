@@ -12,8 +12,9 @@ Hand::Hand(const Rules& rules)
 {
   m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
 
-  model::RuleVariation rule_variation(rules.m_hand_ptr->rule_variation());
-  m_hand_ptr->set_allocated_rule_variation(&rule_variation);
+  auto new_rules = rules.m_hand_ptr->rule_variation();
+  auto hand_rules = m_hand_ptr->mutable_rule_variation();
+  *hand_rules = new_rules;
 }
 
 Hand::Hand(std::istream* input)
