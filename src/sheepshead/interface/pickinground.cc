@@ -208,7 +208,6 @@ PickDecision& PickDecisionItr<Handle_T>::operator*()
     m_pick_decision = PickDecision::UNASKED;
     return m_pick_decision;
   }
-
   if(m_decision_number >= m_hand_ptr->picking_round().picking_decisions_size() ||
      m_decision_number < 0) {
       m_pick_decision = PickDecision::UNASKED;
@@ -216,11 +215,11 @@ PickDecision& PickDecisionItr<Handle_T>::operator*()
    switch(m_hand_ptr->picking_round().picking_decisions(m_decision_number)) {
      case model::PickingRound::PICK :
        m_pick_decision = PickDecision::PICK;
+       break;
      case model::PickingRound::PASS :
        m_pick_decision = PickDecision::PASS;
     }
   }
-
   return m_pick_decision;
 }
 
