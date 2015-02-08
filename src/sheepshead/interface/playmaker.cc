@@ -206,6 +206,12 @@ std::vector<Play> Playmaker::available_plays() const
     return plays;
   }
 
+  if(internal::ready_for_loner_play(m_hand_ptr) == m_playerid) {
+    plays.emplace_back(Play::PlayType::LONER, LonerDecision::LONER);
+    plays.emplace_back(Play::PlayType::LONER, LonerDecision::PARTNER);
+    return plays;
+  }
+
   return plays;
 }
 
