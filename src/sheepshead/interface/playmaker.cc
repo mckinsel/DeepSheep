@@ -195,16 +195,21 @@ std::vector<Play> Playmaker::available_plays() const
   if(!internal::is_playable(m_hand_ptr)) return plays;
 
   if(internal::ready_for_pick_play(m_hand_ptr) == m_playerid) {
-    plays.emplace_back(Play::PlayType::PICK, PickDecision::PICK);
-    plays.emplace_back(Play::PlayType::PICK, PickDecision::PASS);
+    // Hand the last picker forced pick rule
+    if(*std::prev(History(m_hand_ptr).picking_round().leader()) == m_playerid &&
+       Rules(m_hand_ptr).no_picker_forced_pick()) {
+      plays.emplace_back(Play::PlayType::PICK, PickDecision::PICK);
+    } else {
+      plays.emplace_back(Play::PlayType::PICK, PickDecision::PICK);
+      plays.emplace_back(Play::PlayType::PICK, PickDecision::PASS);
+  }
     return plays;
   }
 
   return plays;
 }
 
-bool make_pick_play(MutableHandHandle hand_ptr,
-                    const Play& play)
+bool make_pick_play(MutableHandHandle hand_ptr, const Play& play)
 {
   if(*play.pick_decision() == PickDecision::PICK) {
     hand_ptr->mutable_picking_round()->add_picking_decisions(model::PickingRound::PICK);
@@ -216,42 +221,62 @@ bool make_pick_play(MutableHandHandle hand_ptr,
   return true;
 }
 
+bool make_loner_play(MutableHandHandle hand_ptr, const Play& play)
+{
+  if(*play.loner_decision() == LonerDecision::LONER) {
+    hand_ptr->mutable_picking_round()->set_loner_decision(model::PickingRound::LONER);
+  } else if(*play.loner_decision() == LonerDecision::PARTNER) {
+    hand_ptr->mutable_picking_round()->set_loner_decision(model::PickingRound::PARTNER);
+  } else {
+    return false;
+  }
+  return true;
+}
+
 bool Playmaker::make_play(const Play& play)
 {
   PlayerId ready_player;
 
   switch(play.play_type()) {
+
     case Play::PlayType::PICK :
       ready_player = internal::ready_for_pick_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
       return make_pick_play(m_hand_ptr, play);
       break;
+
     case Play::PlayType::LONER :
       ready_player = internal::ready_for_loner_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
+      return make_loner_play(m_hand_ptr, play);
       break;
+
     case Play::PlayType::PARTNER :
       ready_player = internal::ready_for_partner_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
       break;
+
     case Play::PlayType::UNKNOWN :
       ready_player = internal::ready_for_unknown_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
       break;
+
     case Play::PlayType::DISCARD :
       ready_player = internal::ready_for_discard_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
       break;
+
     case Play::PlayType::TRICK_CARD :
       ready_player = internal::ready_for_trick_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
       break;
+
     default:
       assert(!"Oh no, a mystery play");
   }
