@@ -180,3 +180,55 @@ Hand.
     2. Number of tricks
     3. Picker style, Ace, JD, or forced?
     4. Various cracking options.
+
+
+### Iterators in the sheepshead iterface
+    1. PlayerItr. Dereferences to PlayerId&. Is "circular", so iterating
+       past the end just brings you back to the first PlayerId.
+    2. CardItr. Deferences to Card.
+    3. TrickItr. Deferences to Trick.
+    4. PickDecisionItr. Dereferences to PickDecision
+
+### Transitions in the picking round
+
+This gets complicated because the rules of sheepshead are kind of complicated
+and underspecified. In general, we'll make players "choose" to make compelled
+plays but not plays that make no sense. So, a player may have to pick, but a
+player won't choose "null" partner or something because partners aren't
+allowed.
+
+The picking round starts with each player deciding to pick or pass. Each player
+is free to do either when given the chance, except when it's the last player to
+decide and the "forced pick" rule is in effect. Then that player can only
+pick.
+
+There are two possible outcomes after players decide to pick or pass: one
+player picks or nobody picks. If nobody picks, then what happens depends on the
+rules. If the rules say doubler, then the hand ends and the next one is worth
+double. If the rules say leasters, then the picking round ends, and the hand is
+played using leasters rules.
+
+That leaves the case when somebody does pick. If the rules do not permit a
+partner, then the next step is for the picker to discard and the picking round
+is finished. Similarly, if the rules do permit a partner, partner selection is
+by jack of diamonds, and the picker has the jack of diamonds, the picker must
+go alone. This isn't a rule endorsed by any guide I've seen, but it avoids some
+problems the guides have not considered.
+
+If the rules do permit a partner, then the next step is for the
+picker to decide whether to pick a partner or to go alone.
+
+If the picker decides to go alone, then the next step is for the picker to
+discard and the picking round is finished. If the picker decides to get a
+partner, then what happens depends on the rules for choosing a partner.
+
+If the rules say the player with the jack of diamonds is partner, then the picker
+discards and the picking rounds is finished. If the rules say partner is by
+called ace, then the next step is for the picker to call a partner card.
+
+The rules for calling a partner card are trickly. The relevant question is
+whether the picker ends up calling an ace of a suit for which he has no fail
+cards. If that is false, then the next is discard, and the picking round is
+finished. If that is true, then the next step is for the picker to designate
+one of his cards as "unknown". Then, finally that longest path through the
+picking round is over, and the picker can discard.
