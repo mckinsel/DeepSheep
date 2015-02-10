@@ -24,6 +24,9 @@ public:
   //! Return the number of cards dealt to the blinds. Default is 2
   int number_of_cards_in_blinds() const;
 
+  //! Return whether the picker may play with a partner
+  bool partner_is_allowed() const;
+
   //! Return whether partner is chosen by called ace. Default is true.
   bool partner_by_called_ace() const;
   //! Return whether parnter is chosen by jack of diamonds. Default is false.

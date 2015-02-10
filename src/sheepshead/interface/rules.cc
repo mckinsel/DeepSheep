@@ -54,6 +54,11 @@ int Rules::number_of_cards_in_blinds() const
   return num_cards;
 }
 
+bool Rules::partner_is_allowed() const
+{
+  return m_hand_ptr->rule_variation().num_players() > 4;
+}
+
 bool Rules::partner_by_called_ace() const
 {
   return m_hand_ptr->rule_variation().partner_method() == sheepshead::model::CALLED_ACE;
