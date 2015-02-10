@@ -127,6 +127,9 @@ PlayerId ready_for_partner_play(const ConstHandHandle& hand_ptr)
   // If we haven't made the loner decision yet, we're not ready for a partner
   if(picking_round.loner_decision() == LonerDecision::NONE) return PlayerId();
 
+  // If the picker is going alone, there's no partner decision
+  if(picking_round.loner_decision() == LonerDecision::LONER) return PlayerId();
+
   // We've made the loner decision, so see if the partner card has been called
   // yet.
   if(picking_round.partner_card().is_null()) {
