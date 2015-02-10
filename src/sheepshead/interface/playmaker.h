@@ -26,11 +26,11 @@ public:
   // LONER
   Play(PlayType play_tag, LonerDecision decision);
   // PARTNER, TRICK_CARD
-  Play(PlayType play_tag, Card&& decision);
+  Play(PlayType play_tag, Card decision);
   // UNKNOWN
-  Play(PlayType play_tag, std::pair<Card, Card::Suit>&& decision);
+  Play(PlayType play_tag, std::pair<Card, Card::Suit> decision);
   // DISCARD
-  Play(PlayType play_tag, std::vector<Card>&& decision);
+  Play(PlayType play_tag, std::vector<Card> decision);
 
   // These all need to be explicit because of the variant type.
   virtual ~Play();
