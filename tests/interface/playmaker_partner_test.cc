@@ -12,11 +12,16 @@ TEST(TestPlaymaker, TestGoAloneLeadsToDiscard)
 
   EXPECT_TRUE(hand.playmaker(*player_itr)
               .make_play(testplays::pick)); 
+  EXPECT_TRUE(hand.is_playable());
+
   EXPECT_TRUE(hand.playmaker(*player_itr)
               .make_play(testplays::go_alone));
+  EXPECT_TRUE(hand.is_playable());
+
   auto available_plays = hand.playmaker(*player_itr)
                          .available_plays(); 
-  
+  EXPECT_GT(available_plays.size(), 0);
+
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::DISCARD);
 }
@@ -30,10 +35,16 @@ TEST(TestPlaymaker, TestNoAloneLeadsToPartner)
 
   EXPECT_TRUE(hand.playmaker(*player_itr)
               .make_play(testplays::pick)); 
+  EXPECT_TRUE(hand.is_playable());
+
   EXPECT_TRUE(hand.playmaker(*player_itr)
               .make_play(testplays::get_partner));
+  EXPECT_TRUE(hand.is_playable());
+
   auto available_plays = hand.playmaker(*player_itr)
                          .available_plays(); 
+  EXPECT_GT(available_plays.size(), 0);
+
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::PARTNER);
 }
