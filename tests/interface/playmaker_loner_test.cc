@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "test_plays.h"
 #include "sheepshead/interface/hand.h"
 
 // Test that the loner decision is valid when partner calls are allowed.
@@ -26,28 +27,26 @@ TEST(TestPlaymaker, TestPickLeadsToLoner)
   auto hand = sheepshead::interface::Hand();
   hand.arbiter().arbitrate();
 
-  auto pick_play = sheepshead::interface::Play(
-      sheepshead::interface::Play::PlayType::PICK,
-      sheepshead::interface::PickDecision::PICK);
-  auto pass_play = sheepshead::interface::Play(
-      sheepshead::interface::Play::PlayType::PICK,
-      sheepshead::interface::PickDecision::PASS);
-
   auto player_itr = hand.history().picking_round().leader();
-  EXPECT_TRUE(hand.playmaker(*player_itr).make_play(pick_play));
+  EXPECT_TRUE(hand.playmaker(*player_itr).make_play(testplays::pick));
+
   EXPECT_EQ(hand.seat(*player_itr).number_of_held_cards(), 8);
   EXPECT_EQ(hand.history().picking_round().blinds().size(), 0);
+
   EXPECT_TRUE(hand.is_playable());
+
   auto available_plays = hand.playmaker(*player_itr).available_plays();
   check_proper_loner(available_plays);
 
   // Now try again, but not having the leader pick
   auto second_hand = sheepshead::interface::Hand();
   second_hand.arbiter().arbitrate();
+
   player_itr = second_hand.history().picking_round().leader();
-  EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(pass_play));
+  EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(testplays::pass));
+
   ++player_itr;
-  EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(pick_play));
+  EXPECT_TRUE(second_hand.playmaker(*player_itr).make_play(testplays::pick));
   EXPECT_EQ(second_hand.seat(*player_itr).number_of_held_cards(), 8);
   EXPECT_EQ(second_hand.history().picking_round().blinds().size(), 0);
   EXPECT_TRUE(second_hand.is_playable());
@@ -55,27 +54,63 @@ TEST(TestPlaymaker, TestPickLeadsToLoner)
   check_proper_loner(available_plays);
 }
 
-// Test that picking when a partner is not allowed does not lead to a loner
-// decision, instead straight to discard.
-TEST(TestPlaymaker, TestPickNoPartnerLeadsToDiscard)
+// Test that a picker with the jack of diamonds can only go alone when partner
+// is by jack of diamonds
+TEST(TestPlaymaker, TestPickerWithJDMustGoAlone)
 {
   auto mutable_rules = sheepshead::interface::MutableRules();
-  mutable_rules.set_number_of_players(3); // No partner with 3 players
+  mutable_rules.set_partner_by_jack_of_diamonds();
   auto hand = sheepshead::interface::Hand(mutable_rules.get_rules());
-  EXPECT_FALSE(hand.rules().partner_is_allowed());
-  
   hand.arbiter().arbitrate();
-  auto pick_play = sheepshead::interface::Play(
-      sheepshead::interface::Play::PlayType::PICK,
-      sheepshead::interface::PickDecision::PICK);
+
   auto player_itr = hand.history().picking_round().leader();
-  EXPECT_TRUE(hand.playmaker(*player_itr).make_play(pick_play));
+  
+  // Just keep dealing until the leader has the JD
+  while(true) {
+    player_itr = hand.history().picking_round().leader();
+    EXPECT_TRUE(hand.playmaker(*player_itr).make_play(testplays::pick));
+    EXPECT_TRUE(hand.is_playable());
+
+    auto available_plays = hand.playmaker(*player_itr).available_plays();
+
+    bool has_jd = std::any_of(hand.seat(*player_itr).held_cards_begin(),
+                              hand.seat(*player_itr).held_cards_end(),
+            [](sheepshead::interface::Card c)
+              {return c.true_suit() == sheepshead::interface::Card::Suit::DIAMONDS &&
+                      c.true_rank() == sheepshead::interface::Card::Rank::JACK;});
+    if(has_jd) {
+      EXPECT_EQ(available_plays.size(), 1);
+      EXPECT_EQ(available_plays[0], testplays::go_alone);
+      break;
+    } else {
+      EXPECT_EQ(available_plays.size(), 2);
+      EXPECT_EQ(available_plays[0].play_type(),
+                sheepshead::interface::Play::PlayType::LONER);
+    }
+    hand = sheepshead::interface::Hand(mutable_rules.get_rules());
+    hand.arbiter().arbitrate();
+  }
+}
+
+TEST(TestPlaymaker, TestPartnerLeaderToPartnerCard)
+{
+  auto hand = sheepshead::interface::Hand();
+  hand.arbiter().arbitrate();
+
+  auto player_itr = hand.history().picking_round().leader();
+  hand.playmaker(*player_itr).make_play(testplays::pick);
+  hand.playmaker(*player_itr).make_play(testplays::get_partner);
+
   EXPECT_TRUE(hand.is_playable());
 
   auto available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_GT(available_plays.size(), 0);
+  EXPECT_LE(available_plays.size(), 3);
+
   EXPECT_EQ(available_plays[0].play_type(),
-      sheepshead::interface::Play::PlayType::DISCARD);
+            sheepshead::interface::Play::PlayType::PARTNER);
 }
+
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
