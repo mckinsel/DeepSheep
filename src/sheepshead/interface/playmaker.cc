@@ -1,8 +1,9 @@
 #include "playmaker.h"
 
 #include "handstate.h"
-#include "seat.h"
 #include "pickinground.h"
+#include "playmaker_available_plays.h"
+#include "seat.h"
 
 #include <cassert>
 #include <iostream>
@@ -68,7 +69,10 @@ Play::Play(const Play& from)
       m_loner_decision = from.m_loner_decision;
       break;
     case PlayType::PARTNER :
+      new (&m_card_decision) Card(from.m_card_decision);
+      break;
     case PlayType::TRICK_CARD :
+      new (&m_card_decision) Card(from.m_card_decision);
       m_card_decision = from.m_card_decision;
       break;
     case PlayType::DISCARD :
@@ -187,185 +191,6 @@ const std::vector<Card>* Play::discard_decision() const
 
 // Playmaker
 
-// Return the Seat for the player who picked.
-Seat _get_picker_seat(ConstHandHandle hand_ptr)
-{
-  int last_picking_index = hand_ptr->picking_round().picking_decisions_size() - 1;
-  if(hand_ptr->picking_round().picking_decisions(last_picking_index) !=
-        model::PickingRound::PICK)
-    return Seat();
-
-  int picker_position = (last_picking_index -
-                         hand_ptr->picking_round().leader_position())
-                        % Rules(hand_ptr).number_of_players();
-
-  auto picker_id = PlayerId(hand_ptr, picker_position);
-  auto picker_seat = Seat(hand_ptr, picker_id);
-
-  return picker_seat;
-}
-
-void _assign_model_suit(model::Card* model_card, Card::Suit suit)
-{
-  switch(suit) {
-    case Card::Suit::CLUBS : model_card->set_suit(model::CLUBS); break;
-    case Card::Suit::SPADES : model_card->set_suit(model::SPADES); break;
-    case Card::Suit::DIAMONDS : model_card->set_suit(model::DIAMONDS); break;
-    case Card::Suit::HEARTS : model_card->set_suit(model::HEARTS); break;
-    default: assert(!"Unexpected suit.");
-  }
-}
-
-void _assign_model_rank(model::Card* model_card, Card::Rank rank)
-{
-  switch(rank) {
-    case Card::Rank::ACE : model_card->set_rank(model::ACE); break;
-    case Card::Rank::TEN : model_card->set_rank(model::TEN); break;
-    case Card::Rank::KING : model_card->set_rank(model::KING); break;
-    case Card::Rank::QUEEN : model_card->set_rank(model::QUEEN); break;
-    case Card::Rank::JACK : model_card->set_rank(model::JACK); break;
-    case Card::Rank::NINE : model_card->set_rank(model::NINE); break;
-    case Card::Rank::EIGHT : model_card->set_rank(model::EIGHT); break;
-    case Card::Rank::SEVEN : model_card->set_rank(model::EIGHT); break;
-    default: assert(!"Unexpected rank.");
-  }
-
-}
-
-// Given a vector of suits and a rank, fill up the plays_ptr with the implied
-// partner cards.
-std::vector<Card> _create_partner_cards(
-        const ConstHandHandle hand_ptr,
-        const std::vector<Card::Suit>& permitted_suits,
-        Card::Rank rank)
-{
-  std::vector<Card> output;
-  for(auto& suit : permitted_suits) {
-    model::Card model_card;
-    _assign_model_rank(&model_card, rank);
-    _assign_model_suit(&model_card, suit);
-    model_card.set_unknown(false);
-    output.emplace_back(hand_ptr, model_card);
-  }
-  return output;
-}
-
-// A helper function for get_available_partner_cards. Gets suits that can be
-// called given a rank, the cards held by the picker, an the offsuits of the
-// hand.
-std::vector<Card::Suit> _get_permitted_suits(
-        Card::Rank rank,
-        const std::vector<Card>& held_cards,
-        const std::vector<Card::Suit>& offsuits)
-{
-  std::vector<Card::Suit> permitted_suits;
-
-  std::set<Card::Suit> rank_suits_we_have;
-  for(auto& card : held_cards) {
-    if(card.rank() == rank && !card.is_trump())
-       rank_suits_we_have.insert(card.suit());
-  }
-
-  for(auto& suit : offsuits) {
-    if(rank_suits_we_have.find(suit) == rank_suits_we_have.end()) {
-      permitted_suits.push_back(suit);
-    }
-  }
-
-  return permitted_suits;
-}
-
-// Return a vector of Cards that the picker could call as partner cards.
-std::vector<Card> get_available_partner_cards(ConstHandHandle hand_ptr)
-{
-  std::vector<Card> output;
-
-  auto picker_seat = _get_picker_seat(hand_ptr);
-
-  std::vector<Card> held_cards(picker_seat.held_cards_begin(),
-                               picker_seat.held_cards_end());
-  // The most common case is that there's a suit for which we have a fail card
-  // but not the ace
-  std::set<Card::Suit> fail_suits_we_have;
-  for(auto& card : held_cards) {
-    if(!card.is_trump()) fail_suits_we_have.insert(card.suit());
-  }
-
-  std::set<Card::Suit> ace_suits_we_have;
-  for(auto& card : held_cards) {
-    if(card.rank() == Card::Rank::ACE && !card.is_trump())
-       ace_suits_we_have.insert(card.suit());
-  }
-
-  std::vector<Card::Suit> permitted_suits;
-  for(auto& suit : fail_suits_we_have) {
-    if(ace_suits_we_have.find(suit) == ace_suits_we_have.end()) {
-      permitted_suits.push_back(suit);
-    }
-  }
-
-  if(permitted_suits.size() > 0) {
-    output = _create_partner_cards(hand_ptr, permitted_suits, Card::Rank::ACE);
-    return output;
-  }
-
-  // So we're here, which means that there's no fail suit for which we don't
-  // also have the ace. The next thing to try is a non-trump suit for which we
-  // do not have the ace. If that's the case, then later we can call an unknown
-  // card
-  std::vector<Card::Suit> offsuits {Card::Suit::CLUBS, Card::Suit::SPADES,
-                                    Card::Suit::HEARTS};
-  if(Rules(hand_ptr).trump_is_clubs()) {
-    offsuits[0] = Card::Suit::DIAMONDS;
-  }
-
-  permitted_suits = _get_permitted_suits(Card::Rank::ACE, held_cards,
-                                         offsuits);
-
-  if(permitted_suits.size() > 0) {
-    output = _create_partner_cards(hand_ptr, permitted_suits, Card::Rank::ACE);
-    return output;
-  }
-
-  // So now this means that we have all three offsuit aces. That means
-  // we can move on to calling an offsuit ten that we do not have as the
-  // partner card.
-  permitted_suits = _get_permitted_suits(Card::Rank::TEN, held_cards,
-                                         offsuits);
-
-  if(permitted_suits.size() > 0) {
-    output = _create_partner_cards(hand_ptr, permitted_suits, Card::Rank::TEN);
-    return output;
-  }
-
-  // Reaching here means that we have all offsuit aces and tens. The next thing
-  // to try is kings.
-  permitted_suits = _get_permitted_suits(Card::Rank::KING, held_cards,
-                                         offsuits);
-  if(permitted_suits.size() > 0) {
-    output = _create_partner_cards(hand_ptr, permitted_suits, Card::Rank::KING);
-    return output;
-  }
-
-  // No we're in a situation that can only happend with a four player game with
-  // a partner.
-  permitted_suits = _get_permitted_suits(Card::Rank::NINE, held_cards,
-                                         offsuits);
-  if(permitted_suits.size() > 0) {
-    output = _create_partner_cards(hand_ptr, permitted_suits, Card::Rank::NINE);
-    return output;
-  }
-
-  permitted_suits = _get_permitted_suits(Card::Rank::EIGHT, held_cards,
-                                         offsuits);
-  if(permitted_suits.size() > 0) {
-    output = _create_partner_cards(hand_ptr, permitted_suits, Card::Rank::EIGHT);
-    return output;
-  }
-
-  assert(!"Unable to determine permitted partner calls.");
-}
-
 Playmaker::Playmaker(const MutableHandHandle& hand_ptr, const PlayerId& playerid)
   : m_hand_ptr(hand_ptr), m_playerid(playerid)
 {}
@@ -399,7 +224,7 @@ std::vector<Play> Playmaker::available_plays() const
     if(!Rules(m_hand_ptr).partner_by_jack_of_diamonds()) {
       plays.emplace_back(Play::PlayType::LONER, LonerDecision::PARTNER);
     } else {
-      auto picker_seat = _get_picker_seat(m_hand_ptr);
+      auto picker_seat = internal::get_picker_seat(m_hand_ptr);
       if(!std::any_of(picker_seat.held_cards_begin(), picker_seat.held_cards_end(),
             [](Card card){return card.true_suit() == Card::Suit::DIAMONDS &&
                                  card.true_rank() == Card::Rank::JACK;})) {
@@ -411,9 +236,8 @@ std::vector<Play> Playmaker::available_plays() const
 
   // The called partner decision
   if(internal::ready_for_partner_play(m_hand_ptr) == m_playerid) {
-    auto cards = get_available_partner_cards(m_hand_ptr);
-    std::cout << "Found " << cards.size() << " partner cards." << std::endl;
-    for(auto& card : cards) {
+    auto cards = internal::get_permitted_partner_cards(m_hand_ptr);
+    for(auto card : cards) {
       plays.emplace_back(Play::PlayType::PARTNER, card);
     }
     return plays;
@@ -422,7 +246,7 @@ std::vector<Play> Playmaker::available_plays() const
   // The unknown card decision
   if(internal::ready_for_unknown_play(m_hand_ptr) == m_playerid) {
     // Permitted unknown cards are just any card in the picker's hand I think
-    auto picker_seat = _get_picker_seat(m_hand_ptr);
+    auto picker_seat = internal::get_picker_seat(m_hand_ptr);
     for(auto card_itr=picker_seat.held_cards_begin();
              card_itr!=picker_seat.held_cards_end();
              ++card_itr)
@@ -434,7 +258,10 @@ std::vector<Play> Playmaker::available_plays() const
 
   // The discard decision
   if(internal::ready_for_discard_play(m_hand_ptr) == m_playerid) {
-    // TODO: implement discard decision
+    auto discard_vectors = internal::get_permitted_discards(m_hand_ptr);
+    for(auto& discard_vector : discard_vectors) {
+      plays.emplace_back(Play::PlayType::DISCARD, discard_vector);
+    }
     return plays;
   }
 
@@ -511,8 +338,8 @@ bool make_partner_play(MutableHandHandle hand_ptr, const Play& play)
 {
   auto partner_card = play.partner_decision();
   auto model_card = hand_ptr->mutable_picking_round()->mutable_partner_card();
-  _assign_model_suit(model_card, partner_card->true_suit());
-  _assign_model_rank(model_card, partner_card->true_rank());
+  internal::assign_model_suit(model_card, partner_card->true_suit());
+  internal::assign_model_rank(model_card, partner_card->true_rank());
 
   // Now for the trickiness. If the partner card is the ace of suit for which
   // the picker has no fail cards, then proceed to the unknown step. Otherwise,
@@ -520,7 +347,7 @@ bool make_partner_play(MutableHandHandle hand_ptr, const Play& play)
   hand_ptr->mutable_picking_round()->set_unknown_decision_made(false);
   if(partner_card->rank() == Card::Rank::ACE) {
     auto partner_suit = partner_card->suit();
-    auto picker_seat = _get_picker_seat(hand_ptr);
+    auto picker_seat = internal::get_picker_seat(hand_ptr);
 
     bool picker_has_partner_suit_fail =
       std::any_of(picker_seat.held_cards_begin(), picker_seat.held_cards_end(),
