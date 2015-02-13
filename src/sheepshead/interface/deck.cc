@@ -8,6 +8,7 @@
 #include <random>
 
 #include <iostream>
+#include <stdio.h>
 
 namespace sheepshead {
 namespace interface {
@@ -107,8 +108,16 @@ bool Card::is_unknown() const
 
 Card::Suit Card::suit() const
 {
-  // If the card is the unknown card, just report that as its suit.
-  if(this->is_unknown()) return Card::Suit::UNKNOWN;
+  // If the card is the unknown card, report the partner suit as its suit.
+  if(this->is_unknown()) {
+    model::Suit partner_suit = m_hand_ptr->picking_round().partner_card().suit();
+    switch(partner_suit) {
+      case model::DIAMONDS : return Card::Suit::DIAMONDS;
+      case model::HEARTS : return Card::Suit::HEARTS;
+      case model::CLUBS : return Card::Suit::CLUBS;
+      case model::SPADES : return Card::Suit::SPADES;
+    }
+  }
 
   // Check the rules to see if the card is trump
   if(this->is_trump()) return Suit::TRUMP;
