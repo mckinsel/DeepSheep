@@ -169,8 +169,6 @@ PlayerId ready_for_discard_play(const ConstHandHandle& hand_ptr)
   if((*picking_round.picker()).is_null()) return PlayerId();
   // If we haven't made the loner decision yet,  we're not ready
   if(picking_round.loner_decision() == LonerDecision::NONE) return PlayerId();
-  // If the partner card hasn't been picked yet, we need to do that
-  if(picking_round.partner_card().is_null()) return PlayerId();
   // If the unknown decision hasn't been made yet, we can't discard
   if(!picking_round.unknown_decision_has_been_made()) return PlayerId();
 
