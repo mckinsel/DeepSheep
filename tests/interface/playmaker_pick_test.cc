@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "sheepshead/interface/hand.h"
+#include "test_plays.h"
 
 // Test that upon initialization, only one player has available plays and that
 // those plays are pick or pass
@@ -53,10 +54,7 @@ void choose_all_pass(sheepshead::interface::Hand* hand)
     auto available_plays = hand->playmaker(*player_itr).available_plays();
     EXPECT_EQ(available_plays.size(), 2);
 
-    auto pass_play = sheepshead::interface::Play(
-                          sheepshead::interface::Play::PlayType::PICK,
-                          sheepshead::interface::PickDecision::PASS);
-    EXPECT_TRUE(hand->playmaker(*player_itr).make_play(pass_play));
+    EXPECT_TRUE(hand->playmaker(*player_itr).make_play(testplays::pass));
     ++player_itr;
   } while(*player_itr != leader);
 }
@@ -119,6 +117,25 @@ TEST(TestPlaymaker, TestForcedPick)
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(*(available_plays[0].pick_decision()),
             sheepshead::interface::PickDecision::PICK);
+}
+
+// Test that picking when a partner is not allowed does not lead to a loner
+// decision, instead straight to discard.
+TEST(TestPlaymaker, TestPickNoPartnerLeadsToDiscard)
+{
+  auto mutable_rules = sheepshead::interface::MutableRules();
+  mutable_rules.set_number_of_players(3); // No partner with 3 players
+  auto hand = sheepshead::interface::Hand(mutable_rules.get_rules());
+  EXPECT_FALSE(hand.rules().partner_is_allowed());
+  
+  hand.arbiter().arbitrate();
+  auto player_itr = hand.history().picking_round().leader();
+  EXPECT_TRUE(hand.playmaker(*player_itr).make_play(testplays::pick));
+  EXPECT_TRUE(hand.is_playable());
+
+  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays[0].play_type(),
+      sheepshead::interface::Play::PlayType::DISCARD);
 }
 
 int main(int argc, char **argv) {
