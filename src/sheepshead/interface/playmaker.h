@@ -36,8 +36,6 @@ public:
   virtual ~Play();
   Play(const Play& from);
   Play& operator=(const Play& from);
-  Play& operator=(Play&& from);
-  Play(Play&& from);
 
   bool operator==(const Play& rhs) const;
   bool operator!=(const Play& rhs) const;
