@@ -359,6 +359,7 @@ bool make_partner_play(MutableHandHandle hand_ptr, const Play& play)
   } else {
     hand_ptr->mutable_picking_round()->set_unknown_decision_made(true);
   }
+  return true;
 }
 
 bool Playmaker::make_play(const Play& play)
