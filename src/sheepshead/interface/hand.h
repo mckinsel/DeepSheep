@@ -72,7 +72,7 @@ public:
   //! Get a specialized interface to apply the rules of Sheepshead to the Hand.
   Arbiter arbiter();
    
-private:
+protected:
   MutableHandHandle m_hand_ptr;
 
 }; // class Hand
