@@ -56,6 +56,8 @@ public:
   enum class Rank {ACE, TEN, KING, QUEEN, JACK, NINE,
                    EIGHT, SEVEN, UNKNOWN};
   
+  std::string DebugString() const;
+
   bool is_null() const;
 
   /// The sheepshead suit, handling unknown and trump

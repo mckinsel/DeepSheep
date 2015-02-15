@@ -77,6 +77,11 @@ Card::Card(const Card& from)
                      (new model::Card(*from.m_model_card_ptr));
 }
 
+std::string Card::DebugString() const
+{
+  return m_model_card_ptr->DebugString();
+}
+
 Card& Card::operator=(const Card& from)
 {
   m_hand_ptr = from.m_hand_ptr;
