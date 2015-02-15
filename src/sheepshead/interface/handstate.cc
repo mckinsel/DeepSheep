@@ -87,9 +87,9 @@ PlayerId ready_for_pick_play(const ConstHandHandle& hand_ptr)
 
   // No, so we're waiting for a picker. Which one?
   auto itr = std::next(picking_round.leader(),
-                       std::count_if(picking_round.pick_decisions_begin(),
-                                     picking_round.pick_decisions_end(),
-                                     [](PickDecision p){return p != PickDecision::UNASKED;}));
+          std::count_if(picking_round.pick_decisions_begin(),
+                        picking_round.pick_decisions_end(),
+                        [](PickDecision p){return p != PickDecision::UNASKED;}));
   return *itr;
 }
 
@@ -98,12 +98,12 @@ PlayerId ready_for_pick_play(const ConstHandHandle& hand_ptr)
 //! Return the null player if no player needs decide loner.
 PlayerId ready_for_loner_play(const ConstHandHandle& hand_ptr)
 {
-  if(is_uninitialized(hand_ptr)) return PlayerId();
+  // Check if the whole picking round is over
   auto picking_round = History(hand_ptr).picking_round();
   if(picking_round.is_finished()) return PlayerId();
 
-  // If there's no picker, then we're not ready for a loner play
-  if(picking_round.picker().is_null()) return PlayerId();
+  // If we're ready to pick, then we're not ready for loner
+  if(!ready_for_pick_play(hand_ptr).is_null()) return PlayerId();
 
   // There is a picker, so see if he's decided about going alone yet.
   if(picking_round.loner_decision() == LonerDecision::NONE) {
@@ -118,17 +118,19 @@ PlayerId ready_for_loner_play(const ConstHandHandle& hand_ptr)
 //! Return the null player if no player needs decide partner.
 PlayerId ready_for_partner_play(const ConstHandHandle& hand_ptr)
 {
-  if(is_uninitialized(hand_ptr)) return PlayerId();
+  if(!ready_for_pick_play(hand_ptr).is_null()) return PlayerId();
+  if(!ready_for_loner_play(hand_ptr).is_null()) return PlayerId();
+
   auto picking_round = History(hand_ptr).picking_round();
   if(picking_round.is_finished()) return PlayerId();
 
-  // If there's no picker, then we're not ready for a partner
-  if((*picking_round.picker()).is_null()) return PlayerId();
-  // If we haven't made the loner decision yet, we're not ready for a partner
-  if(picking_round.loner_decision() == LonerDecision::NONE) return PlayerId();
 
   // If the picker is going alone, there's no partner decision
   if(picking_round.loner_decision() == LonerDecision::LONER) return PlayerId();
+
+  // Or, if the partner rules don't say called ace, there's not partner
+  // decision
+  if(Rules(hand_ptr).partner_by_jack_of_diamonds()) return PlayerId();
 
   // We've made the loner decision, so see if the partner card has been called
   // yet.
@@ -141,16 +143,12 @@ PlayerId ready_for_partner_play(const ConstHandHandle& hand_ptr)
 
 PlayerId ready_for_unknown_play(const ConstHandHandle& hand_ptr)
 {
-  if(is_uninitialized(hand_ptr)) return PlayerId();
+  if(!ready_for_pick_play(hand_ptr).is_null()) return PlayerId();
+  if(!ready_for_loner_play(hand_ptr).is_null()) return PlayerId();
+  if(!ready_for_partner_play(hand_ptr).is_null()) return PlayerId();
+
   auto picking_round = History(hand_ptr).picking_round();
   if(picking_round.is_finished()) return PlayerId();
-
-  // If there's no picker, then we're not ready for a partner
-  if((*picking_round.picker()).is_null()) return PlayerId();
-  // If we haven't made the loner decision yet,  we're not ready
-  if(picking_round.loner_decision() == LonerDecision::NONE) return PlayerId();
-  // If the partner card hasn't been picked yet, we need to do that
-  if(picking_round.partner_card().is_null()) return PlayerId();
 
   if(!picking_round.unknown_decision_has_been_made()) {
     return *picking_round.picker();
@@ -161,16 +159,13 @@ PlayerId ready_for_unknown_play(const ConstHandHandle& hand_ptr)
 
 PlayerId ready_for_discard_play(const ConstHandHandle& hand_ptr)
 {
-  if(is_uninitialized(hand_ptr)) return PlayerId();
+  if(!ready_for_pick_play(hand_ptr).is_null()) return PlayerId();
+  if(!ready_for_loner_play(hand_ptr).is_null()) return PlayerId();
+  if(!ready_for_partner_play(hand_ptr).is_null()) return PlayerId();
+  if(!ready_for_unknown_play(hand_ptr).is_null()) return PlayerId();
+
   auto picking_round = History(hand_ptr).picking_round();
   if(picking_round.is_finished()) return PlayerId();
-
-  // If there's no picker, then we're not ready for a partner
-  if((*picking_round.picker()).is_null()) return PlayerId();
-  // If we haven't made the loner decision yet,  we're not ready
-  if(picking_round.loner_decision() == LonerDecision::NONE) return PlayerId();
-  // If the unknown decision hasn't been made yet, we can't discard
-  if(!picking_round.unknown_decision_has_been_made()) return PlayerId();
 
   // If the discarded cards are empty, then we do need to discard
   if(picking_round.discarded_cards().size() == 0) {
