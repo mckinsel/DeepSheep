@@ -47,7 +47,7 @@ void assign_model_rank(model::Card* model_card, Card::Rank rank)
     case Card::Rank::JACK : model_card->set_rank(model::JACK); break;
     case Card::Rank::NINE : model_card->set_rank(model::NINE); break;
     case Card::Rank::EIGHT : model_card->set_rank(model::EIGHT); break;
-    case Card::Rank::SEVEN : model_card->set_rank(model::EIGHT); break;
+    case Card::Rank::SEVEN : model_card->set_rank(model::SEVEN); break;
     default: assert(!"Unexpected rank.");
   }
 }
