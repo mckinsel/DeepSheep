@@ -19,6 +19,8 @@ public:
   
   bool is_null() const;  
 
+  std::string DebugString() const;
+
   CardItr held_cards_begin() const;
   CardItr held_cards_end() const;
   int number_of_held_cards() const;

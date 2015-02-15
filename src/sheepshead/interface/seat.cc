@@ -18,6 +18,17 @@ bool Seat::is_null() const
   return m_hand_ptr == nullptr;
 }
 
+std::string Seat::DebugString() const
+{
+  //std::cerr << "Calling debug string!" << std::endl;
+  std::string debug_str = "Seat debug string: ";
+  auto held_cards = m_hand_ptr->seats(m_position).held_cards();
+  for(auto& card : held_cards) {
+    debug_str += card.DebugString();
+  }
+  return debug_str;
+}
+
 CardItr Seat::held_cards_begin() const
 {
   if(this->is_null()) return CardItr();
