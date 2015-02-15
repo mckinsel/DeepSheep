@@ -92,7 +92,9 @@ TEST(TestPlaymaker, TestPickerWithJDMustGoAlone)
   }
 }
 
-TEST(TestPlaymaker, TestPartnerLeaderToPartnerCard)
+// Test that choosing to get a partner leads to having to pick a partner card
+// when the rules say called ace
+TEST(TestPlaymaker, TestPartnerLonerToPartnerCard)
 {
   auto hand = sheepshead::interface::Hand();
   hand.arbiter().arbitrate();
@@ -110,7 +112,6 @@ TEST(TestPlaymaker, TestPartnerLeaderToPartnerCard)
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::PARTNER);
 }
-
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

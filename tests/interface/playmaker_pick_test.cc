@@ -127,7 +127,7 @@ TEST(TestPlaymaker, TestPickNoPartnerLeadsToDiscard)
   mutable_rules.set_number_of_players(3); // No partner with 3 players
   auto hand = sheepshead::interface::Hand(mutable_rules.get_rules());
   EXPECT_FALSE(hand.rules().partner_is_allowed());
-  
+
   hand.arbiter().arbitrate();
   auto player_itr = hand.history().picking_round().leader();
   EXPECT_TRUE(hand.playmaker(*player_itr).make_play(testplays::pick));
