@@ -1,5 +1,6 @@
 #include "playmaker_available_plays.h"
 
+#include <iostream>
 #include <set>
 
 #include "history.h"
@@ -246,7 +247,7 @@ std::vector<std::vector<Card> > get_permitted_discards(ConstHandHandle hand_ptr)
         output.push_back(candidate_discard);
       }
     }
-  } while(std::next_permutation(selection_vector.begin(), selection_vector.end()));
+  } while(std::prev_permutation(selection_vector.begin(), selection_vector.end()));
 
   return output;
 }
