@@ -76,9 +76,11 @@ Play::Play(const Play& from)
       m_card_decision = from.m_card_decision;
       break;
     case PlayType::DISCARD :
+      new (&m_discard_decision) std::vector<Card>();
       m_discard_decision = from.m_discard_decision;
       break;
     case PlayType::UNKNOWN :
+      new (&m_unknown_decision) std::pair<Card, Card::Suit>();
       m_unknown_decision = from.m_unknown_decision;
       break;
   }
@@ -245,13 +247,17 @@ std::vector<Play> Playmaker::available_plays() const
 
   // The unknown card decision
   if(internal::ready_for_unknown_play(m_hand_ptr) == m_playerid) {
+
     // Permitted unknown cards are just any card in the picker's hand I think
     auto picker_seat = internal::get_picker_seat(m_hand_ptr);
+    auto model_partner_card = m_hand_ptr->picking_round().partner_card();
+    auto partner_card = Card(m_hand_ptr, model_partner_card);
     for(auto card_itr=picker_seat.held_cards_begin();
              card_itr!=picker_seat.held_cards_end();
              ++card_itr)
     {
-      plays.emplace_back(Play::PlayType::UNKNOWN, *card_itr);
+      plays.emplace_back(Play::PlayType::UNKNOWN,
+                         std::make_pair(*card_itr, partner_card.suit()));
     }
     return plays;
   }
@@ -357,7 +363,29 @@ bool make_partner_play(MutableHandHandle hand_ptr, const Play& play)
       hand_ptr->mutable_picking_round()->set_unknown_decision_made(true);
     }
   } else {
-    hand_ptr->mutable_picking_round()->set_unknown_decision_made(true);
+    hand_ptr->mutable_picking_round()->set_unknown_decision_made(false);
+  }
+  return true;
+}
+
+bool make_unknown_play(MutableHandHandle hand_ptr, const Play& play)
+{
+  auto unknown_pair = play.unknown_decision();
+  auto unknown_card = model::Card();
+  internal::assign_model_suit(&unknown_card, unknown_pair->first.true_suit());
+  internal::assign_model_rank(&unknown_card, unknown_pair->first.true_rank());
+  std::cerr << unknown_card.DebugString() << std::endl;
+
+  int picker_position = (hand_ptr->picking_round().picking_decisions_size() -
+                          hand_ptr->picking_round().leader_position() - 1) %
+                        Rules(hand_ptr).number_of_players();
+
+  auto picker_seat = hand_ptr->mutable_seats(picker_position);
+  for(auto& model_card : *picker_seat->mutable_held_cards()) {
+    if(model_card.suit() == unknown_card.suit() &&
+       model_card.rank() == unknown_card.rank()) {
+      model_card.set_unknown(true);
+    }
   }
   return true;
 }
@@ -393,6 +421,7 @@ bool Playmaker::make_play(const Play& play)
       ready_player = internal::ready_for_unknown_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
+      return make_unknown_play(m_hand_ptr, play);
       break;
 
     case Play::PlayType::DISCARD :
