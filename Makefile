@@ -35,11 +35,11 @@ interface: $(INTERFACE_OBJS) proto
 build:
 	@mkdir -p build
 
-OBJS =$(INTERFACE_OBJS) $(PROTO_OBJS)
+OBJS =$(PROTO_OBJS) $(INTERFACE_OBJS)
 DEPENDS = $(OBJS:.o=.d)
 
 $(STATIC_LIB_TARGET): CXXFLAGS += -fPIC
-$(STATIC_LIB_TARGET): build proto interface
+$(STATIC_LIB_TARGET): build $(OBJS)
 	ar rcs $@ $(OBJS)
 	ranlib $@
 
