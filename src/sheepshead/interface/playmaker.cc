@@ -374,7 +374,6 @@ bool make_unknown_play(MutableHandHandle hand_ptr, const Play& play)
   auto unknown_card = model::Card();
   internal::assign_model_suit(&unknown_card, unknown_pair->first.true_suit());
   internal::assign_model_rank(&unknown_card, unknown_pair->first.true_rank());
-  std::cerr << unknown_card.DebugString() << std::endl;
 
   int picker_position = (hand_ptr->picking_round().picking_decisions_size() -
                           hand_ptr->picking_round().leader_position() - 1) %
@@ -387,7 +386,49 @@ bool make_unknown_play(MutableHandHandle hand_ptr, const Play& play)
       model_card.set_unknown(true);
     }
   }
+  hand_ptr->mutable_picking_round()->set_unknown_decision_made(true);
   return true;
+}
+
+bool make_discard_play(MutableHandHandle hand_ptr, const Play& play)
+{
+  auto discards = play.discard_decision();
+
+  // Create model::Cards for each card to be discarded
+  std::vector<model::Card> model_discards;
+  for(auto& discard : *discards) {
+    auto model_discard = model::Card();
+    internal::assign_model_suit(&model_discard, discard.true_suit());
+    internal::assign_model_rank(&model_discard, discard.true_rank());
+    model_discards.push_back(model_discard);
+  }
+
+  int picker_position = (hand_ptr->picking_round().picking_decisions_size() -
+                          hand_ptr->picking_round().leader_position() - 1) %
+                        Rules(hand_ptr).number_of_players();
+
+  auto held_cards = hand_ptr->seats(picker_position).held_cards();
+  std::vector<model::Card> new_held_cards;
+
+  for(auto& held_card : held_cards) {
+    if(std::any_of(model_discards.begin(), model_discards.end(),
+           [&held_card](model::Card discard)
+           {return held_card.suit() == discard.suit() &&
+                   held_card.rank() == discard.rank();})) {
+      auto new_discard = hand_ptr->mutable_picking_round()->add_discarded_cards();
+      *new_discard = held_card;
+    } else {
+      new_held_cards.push_back(held_card);
+    }
+  }
+
+  hand_ptr->mutable_seats(picker_position)->clear_held_cards();
+  for(auto new_held_card : new_held_cards) {
+    auto new_card = hand_ptr->mutable_seats(picker_position)->add_held_cards();
+    *new_card = new_held_card;
+  }
+
+ return true;
 }
 
 bool Playmaker::make_play(const Play& play)
@@ -428,6 +469,7 @@ bool Playmaker::make_play(const Play& play)
       ready_player = internal::ready_for_discard_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
+      return make_discard_play(m_hand_ptr, play);
       break;
 
     case Play::PlayType::TRICK_CARD :
