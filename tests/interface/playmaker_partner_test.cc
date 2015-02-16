@@ -289,6 +289,7 @@ TEST(TestPlaymaker, TestAllTrumpTwoAces)
   
   hand.mock_held_cards(*player_itr, mocked_held_cards);
   hand.playmaker(*player_itr).make_play(testplays::pick);
+  EXPECT_EQ(hand.seat(*player_itr).number_of_held_cards(), 8);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
   auto available_plays = hand.playmaker(*player_itr).available_plays();
@@ -299,7 +300,79 @@ TEST(TestPlaymaker, TestAllTrumpTwoAces)
             sheepshead::interface::Card::Suit::HEARTS);
   EXPECT_EQ(available_plays[0].partner_decision()->rank(),
             sheepshead::interface::Card::Rank::ACE);
+
+  // Make the partner play
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_GT(available_plays.size(), 0);
+  EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.play_type() == sheepshead::interface::Play::PlayType::UNKNOWN;}));
+
+  // Make the unknown play
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+  EXPECT_EQ(1, std::count_if(hand.seat(*player_itr).held_cards_begin(),
+                             hand.seat(*player_itr).held_cards_end(),
+        [](Card c){return c.is_unknown();}));
 }
+
+// Another unknown test
+TEST(TestPlaymaker, TestNoFailAces)
+{
+  auto hand = testplays::TestHand();
+  hand.arbiter().arbitrate();
+  auto player_itr = hand.history().picking_round().leader();
+
+  using sheepshead::interface::Card;
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_blinds  {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::ACE),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::TEN)};
+  hand.mock_blinds(mocked_blinds);
+
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::EIGHT),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::NINE),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::KING),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::JACK),
+    std::make_pair(Card::Suit::DIAMONDS, Card::Rank::JACK)};
+
+  hand.mock_held_cards(*player_itr, mocked_held_cards);
+  hand.playmaker(*player_itr).make_play(testplays::pick);
+  hand.playmaker(*player_itr).make_play(testplays::get_partner);
+
+  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  // Two aces could be called with unknown here
+  EXPECT_EQ(available_plays.size(), 2);
+  EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.play_type() == sheepshead::interface::Play::PlayType::PARTNER;}));
+  EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.partner_decision()->rank() == sheepshead::interface::Card::Rank::ACE;}));
+
+  // Clubs and hearts, not spades bc we have the ace
+  EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.partner_decision()->suit() == sheepshead::interface::Card::Suit::CLUBS;}));
+  EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.partner_decision()->suit() == sheepshead::interface::Card::Suit::HEARTS;}));
+
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_GT(available_plays.size(), 0);
+  EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.play_type() == sheepshead::interface::Play::PlayType::UNKNOWN;}));
+
+  // Make the unknown play
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+  EXPECT_EQ(1, std::count_if(hand.seat(*player_itr).held_cards_begin(),
+                             hand.seat(*player_itr).held_cards_end(),
+        [](Card c){return c.is_unknown();}));
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   auto results = RUN_ALL_TESTS();
