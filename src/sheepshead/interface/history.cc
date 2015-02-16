@@ -44,7 +44,7 @@ Trick<decltype(History::m_hand_ptr)> History::latest_trick() const
 
   if(num_started == 0) return Trick<decltype(m_hand_ptr)>();
 
-  return Trick<decltype(m_hand_ptr)>(m_hand_ptr, num_started);
+  return Trick<decltype(m_hand_ptr)>(m_hand_ptr, num_started - 1);
 }
 
 } // namespace interface
