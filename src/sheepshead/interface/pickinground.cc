@@ -148,7 +148,6 @@ bool PickingRound<Handle_T>::is_finished() const
   if(!(this->picker()->is_null()) && // There is a picker
      !(this->loner_decision() == LonerDecision::NONE) && // He's made a loner decision
       (this->unknown_decision_has_been_made()) && // He's made the unknown decision
-     !(this->partner_card().is_null()) && // He's made the partner card decision
       (this->discarded_cards().size() ==
           static_cast<size_t>(Rules(m_hand_ptr).number_of_cards_in_blinds())))
                                           // He's discarded
