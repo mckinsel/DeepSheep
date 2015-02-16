@@ -141,6 +141,7 @@ bool Play::operator==(const Play& rhs) const
       return m_unknown_decision == rhs.m_unknown_decision;
       break;
   }
+  return false;
 }
 
 bool Play::operator!=(const Play& rhs) const

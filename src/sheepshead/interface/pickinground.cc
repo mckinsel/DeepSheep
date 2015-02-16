@@ -72,6 +72,7 @@ LonerDecision PickingRound<Handle_T>::loner_decision() const
     case model::PickingRound::PARTNER : return LonerDecision::PARTNER;
     case model::PickingRound::LONER : return LonerDecision::LONER;
   }
+  return LonerDecision::NONE;
 }
 
 template<typename Handle_T>
