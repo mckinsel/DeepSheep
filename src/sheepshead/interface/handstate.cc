@@ -1,5 +1,7 @@
 #include "handstate.h"
 
+#include <iostream>
+
 namespace sheepshead {
 namespace interface {
 namespace internal {
@@ -150,7 +152,7 @@ PlayerId ready_for_unknown_play(const ConstHandHandle& hand_ptr)
   auto picking_round = History(hand_ptr).picking_round();
   if(picking_round.is_finished()) return PlayerId();
 
-  if(!picking_round.unknown_decision_has_been_made()) {
+  if(picking_round.unknown_decision_has_been_made() != true) {
     return *picking_round.picker();
   } else {
     return PlayerId();
