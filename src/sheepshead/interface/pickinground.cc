@@ -89,7 +89,7 @@ bool PickingRound<Handle_T>::unknown_decision_has_been_made() const
 {
   if(this->is_null()) return false;
 
-  return m_hand_ptr->picking_round().has_unknown_decision_made();
+  return m_hand_ptr->picking_round().unknown_decision_made();
 }
 
 template<typename Handle_T>
