@@ -181,12 +181,16 @@ PlayerId ready_for_trick_play(const ConstHandHandle& hand_ptr)
 {
   if(is_uninitialized(hand_ptr)) return PlayerId();
   if(is_finished(hand_ptr)) return PlayerId();
-  
   if(!History(hand_ptr).picking_round().is_finished()) return PlayerId();
 
   // So the hand isn't over, but the picking round is
   auto latest_trick = History(hand_ptr).latest_trick();
   if(latest_trick.is_null()) return PlayerId();
+  if(latest_trick.is_finished())  return PlayerId();
+
+  auto itr = std::next(latest_trick.leader(),
+                       latest_trick.number_of_laid_cards());
+  return *itr;
 }
 
 } // namespace internal
