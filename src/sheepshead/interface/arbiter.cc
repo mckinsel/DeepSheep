@@ -11,6 +11,7 @@ namespace interface {
 
 namespace internal {
 void initialize_hand(const MutableHandHandle& hand_ptr); // defined below
+void prepare_new_trick(const MutableHandHandle& hand_ptr); // defined below
 } // namespace internal
 
 Arbiter::Arbiter(const MutableHandHandle& hand_ptr)
@@ -26,6 +27,10 @@ void Arbiter::arbitrate()
     return;
   }
 
+  if(internal::ready_for_next_trick(m_hand_ptr)) {
+    internal::prepare_new_trick(m_hand_ptr);
+    return;
+  }
 }
 
 bool Arbiter::is_playable() const
@@ -44,6 +49,17 @@ bool Arbiter::is_arbitrable() const
 }
 
 namespace internal {
+
+void prepare_new_trick(const MutableHandHandle& hand_ptr)
+{
+  auto new_trick = hand_ptr->add_tricks();
+
+  if(hand_ptr->tricks_size() == 1) {
+    new_trick->set_leader_position(
+        (hand_ptr->picking_round().leader_position() + 1)
+        % Rules(hand_ptr).number_of_players());
+  }
+}
 
 void initialize_hand(const MutableHandHandle& hand_ptr)
 {
