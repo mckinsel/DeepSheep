@@ -157,6 +157,7 @@ Card::Suit Card::true_suit() const
     case model::CLUBS : return Card::Suit::CLUBS;
     case model::SPADES : return Card::Suit::SPADES;
   }
+  return Card::Suit::UNKNOWN;
 }
 
 Card::Rank Card::rank() const
@@ -177,6 +178,7 @@ Card::Rank Card::true_rank() const
     case model::EIGHT : return Card::Rank::EIGHT;
     case model::SEVEN : return Card::Rank::SEVEN;
   }
+  return Card::Rank::UNKNOWN;
 }
 
 int Card::point_value() const
