@@ -1,6 +1,8 @@
 #include "sheepshead/interface/hand.h"
 #include "sheepshead/interface/playmaker_available_plays.h"
 
+#include <stdlib.h>
+
 // Store some plays for testing
 
 
@@ -21,6 +23,38 @@ auto go_alone = sheepshead::interface::Play(
 auto get_partner = sheepshead::interface::Play(
     sheepshead::interface::Play::PlayType::LONER,
     sheepshead::interface::LonerDecision::PARTNER);
+
+
+void advance_default_hand_past_picking_round(
+    sheepshead::interface::Hand* hand,
+    bool do_get_partner)
+{
+  hand->arbiter().arbitrate();
+  auto player_itr = hand->history().picking_round().leader();
+
+  int picker_position = rand() % hand->rules().number_of_players();
+  int counter = 0;
+  while(counter < picker_position) {
+    hand->playmaker(*player_itr).make_play(pass);
+    ++counter;
+    ++player_itr;
+  }
+
+  hand->playmaker(*player_itr).make_play(pick);
+
+  if(do_get_partner) {
+    hand->playmaker(*player_itr).make_play(get_partner);
+  } else {
+    hand->playmaker(*player_itr).make_play(go_alone);
+  }
+
+  std::vector<sheepshead::interface::Play> available_plays;
+  do {
+    available_plays = hand->playmaker(*player_itr).available_plays();
+    hand->playmaker(*player_itr).make_play(available_plays[0]);
+  } while(available_plays[0].play_type() !=
+          sheepshead::interface::Play::PlayType::DISCARD);
+}
 
 using sheepshead::interface::Card;
 
@@ -62,6 +96,19 @@ public:
     picking_round->clear_blinds();
     for(auto card_id : card_ids) {
       auto new_card = picking_round->add_blinds();
+      new_card->set_unknown(false);
+      sheepshead::interface::internal::assign_model_suit(new_card, card_id.first);
+      sheepshead::interface::internal::assign_model_rank(new_card, card_id.second);
+    }
+  }
+
+  void mock_laid_cards(int trick_number,
+                       std::vector<std::pair<Card::Suit, Card::Rank>> card_ids)
+  {
+    auto trick = m_hand_ptr->mutable_tricks(trick_number);
+    trick->clear_laid_cards();
+    for(auto card_id : card_ids) {
+      auto new_card = trick->add_laid_cards();
       new_card->set_unknown(false);
       sheepshead::interface::internal::assign_model_suit(new_card, card_id.first);
       sheepshead::interface::internal::assign_model_rank(new_card, card_id.second);
