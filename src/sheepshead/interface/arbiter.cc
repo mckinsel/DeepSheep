@@ -56,7 +56,7 @@ void prepare_new_trick(const MutableHandHandle& hand_ptr)
 
   if(hand_ptr->tricks_size() == 1) {
     new_trick->set_leader_position(
-        (hand_ptr->picking_round().leader_position() + 1)
+        (hand_ptr->picking_round().leader_position())
         % Rules(hand_ptr).number_of_players());
   }
 }
