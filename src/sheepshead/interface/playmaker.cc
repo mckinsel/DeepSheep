@@ -272,6 +272,15 @@ std::vector<Play> Playmaker::available_plays() const
     return plays;
   }
 
+  // A trick card decision
+  if(internal::ready_for_trick_play(m_hand_ptr) == m_playerid) {
+    auto trick_cards = internal::get_permitted_trick_plays(m_hand_ptr);
+    for(auto& trick_card : trick_cards) {
+      plays.emplace_back(Play::PlayType::TRICK_CARD, trick_card);
+    }
+    return plays;
+  }
+
   return plays;
 }
 

@@ -23,6 +23,8 @@ std::vector<Card> get_permitted_partner_cards(ConstHandHandle hand_ptr);
 /// Return a vector of vectors of permitted discards
 std::vector<std::vector<Card>> get_permitted_discards(ConstHandHandle hand_ptr);
 
+std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr);
+
 } // namespace internal
 } // namespace interface
 } // namespace sheepshead

@@ -27,6 +27,17 @@ Seat get_picker_seat(ConstHandHandle hand_ptr)
   return picker_seat;
 }
 
+Seat get_trick_player_seat(ConstHandHandle hand_ptr)
+{
+  auto latest_trick = History(hand_ptr).latest_trick();
+
+  auto player_itr = std::next(latest_trick.leader(),
+                              latest_trick.number_of_laid_cards());
+  auto player_seat = Seat(hand_ptr, *player_itr);
+
+  return player_seat;
+}
+
 void assign_model_suit(model::Card* model_card, Card::Suit suit)
 {
   switch(suit) {
@@ -250,6 +261,90 @@ std::vector<std::vector<Card> > get_permitted_discards(ConstHandHandle hand_ptr)
   } while(std::prev_permutation(selection_vector.begin(), selection_vector.end()));
 
   return output;
+}
+
+std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr)
+{
+  auto latest_trick = History(hand_ptr).latest_trick();
+
+  auto player_itr = std::next(latest_trick.leader(),
+                              latest_trick.number_of_laid_cards());
+  auto player_seat = Seat(hand_ptr, *player_itr);
+
+  // To start, we'll assume all cards are permitted and reduce that as we go on
+  std::vector<Card> permitted_cards(player_seat.held_cards_begin(),
+                                    player_seat.held_cards_end());
+
+  // If we only have one card, then we can play it
+  if(permitted_cards.size() == 1) {
+    return permitted_cards;
+  }
+
+  // If we didn't lead, then we have to follow suit if we can
+  if(player_itr != latest_trick.leader()) {
+    auto led_suit = latest_trick.laid_cards_begin()->suit();
+    int suit_following_card_count =
+      std::count_if(permitted_cards.begin(), permitted_cards.end(),
+                    [led_suit](const Card& c){return c.suit() == led_suit;});
+
+    if(suit_following_card_count > 0) {
+      permitted_cards.erase(std::remove_if(permitted_cards.begin(), permitted_cards.end(),
+            [led_suit](const Card& c){return c.suit() != led_suit;}),
+          permitted_cards.end());
+    }
+  }
+
+  // There some extra rules for partners and pickers
+  if(Rules(hand_ptr).partner_by_called_ace()) {
+
+    auto partner_card = History(hand_ptr).picking_round().partner_card();
+
+    // The picker cannot fail off all partner suit cards before the partner suit
+    // has been led
+    if(History(hand_ptr).picking_round().picker() == player_itr) {
+
+      bool partner_card_already_played = std::any_of(
+         History(hand_ptr).tricks_begin(), History(hand_ptr).tricks_end(),
+           [&partner_card](const Trick<ConstHandHandle>& t)
+           {
+             return std::any_of(t.laid_cards_begin(),
+                               t.laid_cards_end(),
+                               [&partner_card](const Card& c){return c == partner_card;});
+           });
+
+      auto partner_suit_card_count = std::count_if(player_seat.held_cards_begin(),
+                                                   player_seat.held_cards_end(),
+            [&partner_card](const Card& c){return c.suit() == partner_card.suit();});
+
+      // If there is only one partner suit card in hand, then we can't play it
+      if(!partner_card_already_played && partner_suit_card_count < 2) {
+        permitted_cards.erase(std::remove_if(permitted_cards.begin(), permitted_cards.end(),
+              [&partner_card](Card& c){return c == partner_card;}), permitted_cards.end());
+      }
+    }
+
+    // The partner must play the partner card when the partner suit is led
+    if(std::any_of(player_seat.held_cards_begin(), player_seat.held_cards_end(),
+         [&partner_card](const Card& c){return c == partner_card;})) {
+
+      // If the partner suit was led, partner must play the partner card
+      if(player_itr != latest_trick.leader()) {
+        auto led_suit = latest_trick.laid_cards_begin()->suit();
+        if(led_suit == partner_card.suit()) {
+          permitted_cards.clear();
+          permitted_cards.push_back(partner_card);
+        }
+      } else {
+      // If the partner is leading, she can't lead a card that's the partner
+      // suit but isn't the partner card
+        permitted_cards.erase(std::remove_if(permitted_cards.begin(), permitted_cards.end(),
+            [&partner_card](const Card& c){return c.suit() == partner_card.suit() &&
+                                                  c != partner_card;}),
+            permitted_cards.end());
+      }
+    }
+  }
+  return permitted_cards;
 }
 
 } // namespace internal
