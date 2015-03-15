@@ -2,10 +2,13 @@
 #include "test_plays.h"
 #include "sheepshead/interface/hand.h"
 
+// Test that the leader from the picking round is supposed to make a trick play
+// when the picking round is over.
 TEST(TestTricks, TestTrickAfterPickingRound)
 {
   auto hand = sheepshead::interface::Hand();
-  testplays::advance_default_hand_past_picking_round(&hand, true);
+  auto leader_id =
+    *testplays::advance_default_hand_past_picking_round(&hand, true, 0);
   
   EXPECT_TRUE(hand.is_arbitrable());
   EXPECT_FALSE(hand.is_playable());
@@ -17,8 +20,148 @@ TEST(TestTricks, TestTrickAfterPickingRound)
   EXPECT_FALSE(hand.is_arbitrable());
   EXPECT_TRUE(hand.is_playable());
   EXPECT_FALSE(hand.is_finished());
+
+  auto available_plays = hand.playmaker(leader_id).available_plays();
+  EXPECT_GT(available_plays.size(), 0);
+
+  EXPECT_EQ(available_plays[0].play_type(),
+            sheepshead::interface::Play::PlayType::TRICK_CARD);
 }
 
+// Test that the led suit is followed when possible
+TEST(TestTricks, TestFollowLedSuit)
+{
+  auto hand = testplays::TestHand();
+  auto leader_itr =
+    testplays::advance_default_hand_past_picking_round(&hand, true, 3);
+  hand.arbiter().arbitrate();
+
+  using sheepshead::interface::Card;
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::NINE)
+  };
+
+  hand.mock_laid_cards(0,  mocked_laid_cards);
+  auto follower_itr = std::next(leader_itr, 1);
+
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::JACK),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::NINE),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::NINE)};
+  hand.mock_held_cards(*follower_itr, mocked_held_cards);
+
+  auto available_plays = hand.playmaker(*follower_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 2);
+
+  EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.trick_card_decision()->suit() ==
+                sheepshead::interface::Card::Suit::SPADES &&
+                p.trick_card_decision()->rank() ==
+                sheepshead::interface::Card::Rank::NINE;}));
+  EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.trick_card_decision()->suit() ==
+                sheepshead::interface::Card::Suit::SPADES &&
+                p.trick_card_decision()->rank() ==
+                sheepshead::interface::Card::Rank::SEVEN;}));
+}
+
+// Test that all cards are allowed when the led suit cannot be followed
+TEST(TestTricks, TestDoNotFollowWhenCannot)
+{
+  auto hand = testplays::TestHand();
+  auto leader_itr =
+    testplays::advance_default_hand_past_picking_round(&hand, true, 3);
+  hand.arbiter().arbitrate();
+
+  using sheepshead::interface::Card;
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::NINE)
+  };
+
+  hand.mock_laid_cards(0,  mocked_laid_cards);
+  auto follower_itr = std::next(leader_itr, 1);
+
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::JACK),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::NINE),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::NINE)};
+  hand.mock_held_cards(*follower_itr, mocked_held_cards);
+
+  auto available_plays = hand.playmaker(*follower_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 6);
+}
+
+// Test that the led suit is followed when it's trump.
+TEST(TestTricks, TestFollowTrump)
+{
+  auto hand = testplays::TestHand();
+  auto leader_itr =
+    testplays::advance_default_hand_past_picking_round(&hand, true, 3);
+  hand.arbiter().arbitrate();
+
+  using sheepshead::interface::Card;
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::JACK)
+  };
+  hand.mock_laid_cards(0,  mocked_laid_cards);
+  auto follower_itr = std::next(leader_itr, 1);
+
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::QUEEN), // trump
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::JACK), // trump
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::NINE),
+    std::make_pair(Card::Suit::DIAMONDS, Card::Rank::NINE)}; //trump
+  hand.mock_held_cards(*follower_itr, mocked_held_cards);
+
+  auto available_plays = hand.playmaker(*follower_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 3);
+
+  EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.trick_card_decision()->true_suit() ==
+                sheepshead::interface::Card::Suit::SPADES &&
+                p.trick_card_decision()->suit() ==
+                sheepshead::interface::Card::Suit::TRUMP &&
+                p.trick_card_decision()->rank() ==
+                sheepshead::interface::Card::Rank::QUEEN;}));
+  EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.trick_card_decision()->true_suit() ==
+                sheepshead::interface::Card::Suit::HEARTS &&
+                p.trick_card_decision()->suit() ==
+                sheepshead::interface::Card::Suit::TRUMP &&
+                p.trick_card_decision()->rank() ==
+                sheepshead::interface::Card::Rank::JACK;}));
+  EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
+        [](sheepshead::interface::Play p)
+        {return p.trick_card_decision()->true_suit() ==
+                sheepshead::interface::Card::Suit::DIAMONDS &&
+                p.trick_card_decision()->suit() ==
+                sheepshead::interface::Card::Suit::TRUMP &&
+                p.trick_card_decision()->rank() ==
+                sheepshead::interface::Card::Rank::NINE;}));
+}
+
+// TODO: Test follows suit with unknown correctly
+
+// TODO: Test that picker/partner constraints are not applied when partner is
+// jack of diamonds
+
+// TODO: Test that the picker won't fail off the last of the partner suit.
+
+// TODO: Test that the parter won't lead partner suit that isn't the partner card.
+
+// TODO: Test that the partner plays the partner card when the partner suit is led.
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
