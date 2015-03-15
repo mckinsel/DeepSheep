@@ -25,14 +25,15 @@ auto get_partner = sheepshead::interface::Play(
     sheepshead::interface::LonerDecision::PARTNER);
 
 
-void advance_default_hand_past_picking_round(
+sheepshead::interface::PlayerItr
+advance_default_hand_past_picking_round(
     sheepshead::interface::Hand* hand,
-    bool do_get_partner)
+    bool do_get_partner,
+    int picker_position)
 {
   hand->arbiter().arbitrate();
   auto player_itr = hand->history().picking_round().leader();
 
-  int picker_position = rand() % hand->rules().number_of_players();
   int counter = 0;
   while(counter < picker_position) {
     hand->playmaker(*player_itr).make_play(pass);
@@ -54,6 +55,8 @@ void advance_default_hand_past_picking_round(
     hand->playmaker(*player_itr).make_play(available_plays[0]);
   } while(available_plays[0].play_type() !=
           sheepshead::interface::Play::PlayType::DISCARD);
+
+  return hand->history().picking_round().leader();
 }
 
 using sheepshead::interface::Card;
