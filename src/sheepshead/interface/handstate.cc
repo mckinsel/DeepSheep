@@ -1,5 +1,6 @@
 #include "handstate.h"
 
+#include <algorithm>
 #include <iostream>
 
 namespace sheepshead {
@@ -113,6 +114,8 @@ PlayerId ready_for_loner_play(const ConstHandHandle& hand_ptr)
   } else {
     return PlayerId();
   }
+
+  return PlayerId();
 }
 
 /// Return the PlayerId of the player who needs to make the partner card decision.
