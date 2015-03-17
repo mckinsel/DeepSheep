@@ -41,7 +41,7 @@ TEST(TestTricks, TestFollowLedSuit)
     std::make_pair(Card::Suit::SPADES, Card::Rank::NINE)
   };
 
-  hand.mock_laid_cards(0,  mocked_laid_cards);
+  hand.mock_laid_cards(0, mocked_laid_cards);
   auto follower_itr = std::next(leader_itr, 1);
 
   std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
@@ -83,7 +83,7 @@ TEST(TestTricks, TestDoNotFollowWhenCannot)
     std::make_pair(Card::Suit::SPADES, Card::Rank::NINE)
   };
 
-  hand.mock_laid_cards(0,  mocked_laid_cards);
+  hand.mock_laid_cards(0, mocked_laid_cards);
   auto follower_itr = std::next(leader_itr, 1);
 
   std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
@@ -111,7 +111,7 @@ TEST(TestTricks, TestFollowTrump)
   std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
     std::make_pair(Card::Suit::SPADES, Card::Rank::JACK)
   };
-  hand.mock_laid_cards(0,  mocked_laid_cards);
+  hand.mock_laid_cards(0, mocked_laid_cards);
   auto follower_itr = std::next(leader_itr, 1);
 
   std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
@@ -152,12 +152,73 @@ TEST(TestTricks, TestFollowTrump)
                 sheepshead::interface::Card::Rank::NINE;}));
 }
 
+// Test that the picker won't fail off the last of the partner suit.
+TEST(TestTricks, TestPickerKeepsPartnerFail)
+{
+  auto hand = testplays::TestHand();
+  hand.arbiter().arbitrate();
+
+  // First player passes
+  auto player_itr = hand.history().picking_round().leader();
+  hand.playmaker(*player_itr).make_play(testplays::pass);
+  player_itr++;
+
+  using sheepshead::interface::Card;
+  // Give the second player a hand with one club and lots of fail spades
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_held_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::NINE),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::EIGHT),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::NINE),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::DIAMONDS, Card::Rank::QUEEN)};
+  hand.mock_held_cards(*player_itr, mocked_held_cards);
+
+  // And some great blinds
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_blinds {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::QUEEN)};
+  hand.mock_blinds(mocked_blinds);
+
+  // The second player picks and wants a partner
+  hand.playmaker(*player_itr).make_play(testplays::pick);
+  hand.playmaker(*player_itr).make_play(testplays::get_partner);
+
+  // Then the second player selects ace of clubs as the partner card
+  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 2); // spades or clubs
+  available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
+        [](const sheepshead::interface::Play& p)
+            {return p.partner_decision()->suit() != Card::Suit::CLUBS;}),
+      available_plays.end());
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  // And discards. He won't discard the nine of clubs because it's his only
+  // club
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  hand.arbiter().arbitrate();
+
+  // Now, suppose that the nine of hearts is led. The picker doesn't have any
+  // hearts, so any card, including the nine of clubs could be played. But the
+  // rules should prevent that because it's his only club.
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::NINE)
+  };
+  hand.mock_laid_cards(0, mocked_laid_cards);
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 5);
+
+}
+
 // TODO: Test follows suit with unknown correctly
+TEST(TestTricks, TestFollowSuitWithUnknown)
+{
+}
 
 // TODO: Test that picker/partner constraints are not applied when partner is
 // jack of diamonds
-
-// TODO: Test that the picker won't fail off the last of the partner suit.
 
 // TODO: Test that the parter won't lead partner suit that isn't the partner card.
 
