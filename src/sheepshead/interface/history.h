@@ -40,8 +40,7 @@ public:
   int number_of_finished_tricks() const;
 
   //! The latest Trick being played in the Hand.
-  Trick<decltype(m_hand_ptr)>
-  latest_trick() const;
+  Trick<decltype(m_hand_ptr)> latest_trick() const;
 
 
 }; // class History

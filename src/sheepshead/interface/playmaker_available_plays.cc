@@ -308,8 +308,8 @@ std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr)
            [&partner_card](const Trick<ConstHandHandle>& t)
            {
              return std::any_of(t.laid_cards_begin(),
-                               t.laid_cards_end(),
-                               [&partner_card](const Card& c){return c == partner_card;});
+                                t.laid_cards_end(),
+                                [&partner_card](const Card& c){return c == partner_card;});
            });
 
       auto partner_suit_card_count = std::count_if(player_seat.held_cards_begin(),
@@ -318,8 +318,10 @@ std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr)
 
       // If there is only one partner suit card in hand, then we can't play it
       if(!partner_card_already_played && partner_suit_card_count < 2) {
-        permitted_cards.erase(std::remove_if(permitted_cards.begin(), permitted_cards.end(),
-              [&partner_card](Card& c){return c == partner_card;}), permitted_cards.end());
+        permitted_cards.erase(std::remove_if(permitted_cards.begin(),
+                              permitted_cards.end(),
+              [&partner_card](Card& c){return c.suit() == partner_card.suit();}),
+          permitted_cards.end());
       }
     }
 
