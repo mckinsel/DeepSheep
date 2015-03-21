@@ -1,4 +1,5 @@
 #include "sheepshead/interface/history.h"
+#include <algorithm>
 #include <type_traits>
 
 namespace sheepshead {
