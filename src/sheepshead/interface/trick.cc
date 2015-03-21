@@ -2,6 +2,8 @@
 
 #include "sheepshead/interface/rules.h"
 
+#include <unordered_map>
+
 namespace sheepshead {
 namespace interface {
 
@@ -79,13 +81,97 @@ int Trick<Handle_T>::number_of_laid_cards() const
   return m_hand_ptr->tricks(m_trick_number).laid_cards_size();
 }
 
-/*PlayerId Trick::winner() const
+const std::unordered_map<int, int> TRUMP_RANK_ORDER = {
+  std::make_pair((int)Card::Rank::QUEEN, 8),
+  std::make_pair((int)Card::Rank::JACK, 7),
+  std::make_pair((int)Card::Rank::ACE, 6),
+  std::make_pair((int)Card::Rank::TEN, 5),
+  std::make_pair((int)Card::Rank::KING, 4),
+  std::make_pair((int)Card::Rank::NINE, 3),
+  std::make_pair((int)Card::Rank::EIGHT, 2),
+  std::make_pair((int)Card::Rank::SEVEN, 1)
+};
+
+const std::unordered_map<int, int> TRUMP_QUEEN_JACK_ORDER = {
+  std::make_pair((int)Card::Suit::CLUBS, 4),
+  std::make_pair((int)Card::Suit::SPADES, 3),
+  std::make_pair((int)Card::Suit::HEARTS, 2),
+  std::make_pair((int)Card::Suit::DIAMONDS, 1)
+};
+
+const std::unordered_map<int, int> FAIL_RANK_ORDER = {
+  std::make_pair((int)Card::Rank::ACE, 8),
+  std::make_pair((int)Card::Rank::TEN, 7),
+  std::make_pair((int)Card::Rank::KING, 6),
+  std::make_pair((int)Card::Rank::NINE, 5),
+  std::make_pair((int)Card::Rank::EIGHT, 2),
+  std::make_pair((int)Card::Rank::SEVEN, 1)
+};
+
+// Returns true if card_1 beats card_2
+bool card_beats(const Card& card_1, const Card& card_2,
+                 const Card::Suit& led_suit)
+{
+  if(card_1.is_null()) return false;
+  if(card_2.is_null()) return true;
+
+  // Trump always beats fail
+  if(card_1.is_trump() && !card_2.is_trump()) return true;
+  if(card_2.is_trump() && !card_1.is_trump()) return false;
+
+  // If both are trump, use the trump orders to determine who wins
+  if(card_1.is_trump() && card_2.is_trump()) {
+    if(TRUMP_RANK_ORDER.at((int)card_1.rank()) > TRUMP_RANK_ORDER.at((int)card_2.rank()))
+      return true;
+    if(TRUMP_RANK_ORDER.at((int)card_1.rank()) < TRUMP_RANK_ORDER.at((int)card_2.rank()))
+      return false;
+
+    // The trump rank orders are equal, so it must be a queen or a jack
+    if(TRUMP_QUEEN_JACK_ORDER.at((int)card_1.true_suit()) >
+        TRUMP_QUEEN_JACK_ORDER.at((int)card_2.true_suit()))
+      return true;
+    if(TRUMP_QUEEN_JACK_ORDER.at((int)card_1.true_suit()) <
+        TRUMP_QUEEN_JACK_ORDER.at((int)card_2.true_suit()))
+      return false;
+  }
+
+  // So neither card is trump, so now see if one followed suit while the other
+  // did not
+  if(card_1.suit() == led_suit && card_2.suit() != led_suit)
+    return true;
+  if(card_2.suit() == led_suit && card_1.suit() != led_suit)
+    return false;
+
+  // If both followed suit, then use fail rank order
+  if(card_1.suit() == led_suit && card_2.suit() == led_suit) {
+    if(FAIL_RANK_ORDER.at((int)card_1.rank()) > FAIL_RANK_ORDER.at((int)card_2.rank()))
+      return true;
+    if(FAIL_RANK_ORDER.at((int)card_1.rank()) < FAIL_RANK_ORDER.at((int)card_2.rank()))
+      return false;
+  }
+
+  return false;
+}
+
+template<typename Handle_T>
+PlayerId Trick<Handle_T>::winner() const
 {
   if(!(this->is_finished())) return PlayerId();
+
+  auto led_suit = laid_cards_begin()->suit();
+  auto winning_card = Card();
+  auto winning_player = PlayerId();
+  auto player_itr = leader();
+
+  for(auto laid_card_itr=laid_cards_begin(); laid_card_itr!=laid_cards_end(); ++laid_card_itr) {
+    if(card_beats(*laid_card_itr, winning_card, led_suit)) {
+      winning_player = *player_itr;
+    }
+    ++player_itr;
+  }
   
-  // TODO: trick adjudication function
-  return PlayerId();
-}*/
+  return winning_player;
+}
 
 
 template class Trick<ConstHandHandle>;

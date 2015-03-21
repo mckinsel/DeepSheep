@@ -55,7 +55,7 @@ public:
   //! Return the PlayerId of the player who won the Trick.
 
   //! Return a null player if the Trick is not finished.
-  //PlayerId winner() const;
+  PlayerId winner() const;
 
   //Card card_played_by_player(PlayerId) const;
 
