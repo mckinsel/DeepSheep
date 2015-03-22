@@ -2,6 +2,8 @@
 #include "sheepshead/interface/hand.h"
 #include "test_plays.h"
 
+#include <algorithm>
+
 // Test that upon initialization, only one player has available plays and that
 // those plays are pick or pass
 TEST(TestPlaymaker, TestPickPassAvailable)

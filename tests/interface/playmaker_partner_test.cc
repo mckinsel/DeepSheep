@@ -2,6 +2,8 @@
 #include "test_plays.h"
 #include "sheepshead/interface/hand.h"
 
+#include <algorithm>
+
 // Test that choosing to go alone leads to a discard decision, not a partner
 // decision
 TEST(TestPlaymaker, TestGoAloneLeadsToDiscard)

@@ -2,6 +2,8 @@
 #include "sheepshead/interface/hand.h"
 #include "sheepshead/interface/playerid.h"
 
+#include <iterator>
+
 // Test that the default constructor creates a null PlayerId
 TEST(TestPlayerId, TestDefaultConstructor)
 {

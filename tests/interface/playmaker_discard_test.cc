@@ -2,6 +2,9 @@
 #include "test_plays.h"
 #include "sheepshead/interface/hand.h"
 
+#include <algorithm>
+#include <utility>
+
 TEST(TestDiscards, TestDiscardCountDefaultRulesLoner)
 {
   for(int i=0; i<10; ++i) {

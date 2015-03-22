@@ -2,6 +2,10 @@
 #include "test_plays.h"
 #include "sheepshead/interface/hand.h"
 
+#include <algorithm>
+#include <iterator>
+#include <utility>
+
 // Test trump always wins
 TEST(TestTrickWinner, TestTrumpWins)
 {

@@ -2,6 +2,8 @@
 #include "test_plays.h"
 #include "sheepshead/interface/hand.h"
 
+#include <algorithm>
+
 // Test that the loner decision is valid when partner calls are allowed.
 void check_proper_loner(const std::vector<sheepshead::interface::Play>& plays)
 {

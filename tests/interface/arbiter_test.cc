@@ -3,6 +3,7 @@
 #include "sheepshead/interface/hand.h"
 
 #include <iostream>
+#include <unordered_set>
 
 TEST(TestArbiter, TestDeal)
 {

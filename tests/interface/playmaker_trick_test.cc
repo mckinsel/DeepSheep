@@ -2,6 +2,10 @@
 #include "test_plays.h"
 #include "sheepshead/interface/hand.h"
 
+#include <algorithm>
+#include <iterator>
+#include <utility>
+
 // Test that the leader from the picking round is supposed to make a trick play
 // when the picking round is over.
 TEST(TestTricks, TestTrickAfterPickingRound)
