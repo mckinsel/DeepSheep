@@ -2,6 +2,7 @@
 
 #include "sheepshead/interface/rules.h"
 
+#include <iostream>
 #include <unordered_map>
 
 namespace sheepshead {
@@ -166,6 +167,7 @@ PlayerId Trick<Handle_T>::winner() const
   for(auto laid_card_itr=laid_cards_begin(); laid_card_itr!=laid_cards_end(); ++laid_card_itr) {
     if(card_beats(*laid_card_itr, winning_card, led_suit)) {
       winning_player = *player_itr;
+      winning_card = *laid_card_itr;
     }
     ++player_itr;
   }
