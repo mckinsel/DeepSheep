@@ -2,6 +2,8 @@
 
 #include "sheepshead/interface/rules.h"
 
+#include <algorithm>
+
 namespace sheepshead {
 namespace interface {
 
