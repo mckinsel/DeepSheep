@@ -1,5 +1,6 @@
 #include "playmaker_available_plays.h"
 
+#include <algorithm>
 #include <iostream>
 #include <set>
 

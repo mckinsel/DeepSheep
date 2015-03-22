@@ -5,6 +5,7 @@
 #include "playmaker_available_plays.h"
 #include "seat.h"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <set>

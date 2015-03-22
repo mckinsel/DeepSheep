@@ -7,6 +7,7 @@
 #include "sheepshead/interface/deck.h"
 #include "sheepshead/interface/pickinground.h"
 
+#include <utility>
 #include <vector>
 
 namespace sheepshead {

@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <utility>
 
 namespace sheepshead {
 namespace interface {
