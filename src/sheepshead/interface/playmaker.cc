@@ -507,7 +507,9 @@ bool make_discard_play(MutableHandHandle hand_ptr, const Play& play)
 bool make_trick_card_play(MutableHandHandle hand_ptr, const Play& play)
 {
   auto last_model_trick = hand_ptr->mutable_tricks(hand_ptr->tricks_size() - 1);
-  auto player_position = last_model_trick->laid_cards_size();
+  auto player_position = (last_model_trick->laid_cards_size() +
+                          last_model_trick->leader_position()) %
+                         Rules(hand_ptr).number_of_players();
   auto new_trick_card = last_model_trick->add_laid_cards();
 
   auto trick_card = play.trick_card_decision();
@@ -526,6 +528,8 @@ bool make_trick_card_play(MutableHandHandle hand_ptr, const Play& play)
       new_held_cards.push_back(held_card);
     }
   }
+
+  assert(held_cards.size() - new_held_cards.size() == 1);
 
   hand_ptr->mutable_seats(player_position)->clear_held_cards();
   for(auto new_held_card : new_held_cards) {
