@@ -3,6 +3,7 @@
 #include "sheepshead/interface/rules.h"
 
 #include <cassert>
+#include <sstream>
 
 namespace sheepshead {
 namespace interface {
@@ -31,6 +32,13 @@ bool PlayerId::operator!=(const PlayerId& other) const
 {
   return !(*this == other);
 }  
+
+std::string PlayerId::debug_string() const
+{
+  std::ostringstream out_stream;
+  out_stream << "Player at position " <<  m_position << std::endl;
+  return out_stream.str();
+}
 
 PlayerItr::PlayerItr()
   : m_hand_ptr(nullptr), m_position(-1)

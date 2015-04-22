@@ -27,6 +27,8 @@ public:
   bool operator==(const PlayerId& rhs) const;
   bool operator!=(const PlayerId& rhs) const;
 
+  std::string debug_string() const;
+
 private:
   friend class Seat;
   ConstHandHandle m_hand_ptr;
