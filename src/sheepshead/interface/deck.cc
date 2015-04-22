@@ -77,7 +77,7 @@ Card::Card(const Card& from)
                      (new model::Card(*from.m_model_card_ptr));
 }
 
-std::string Card::DebugString() const
+std::string Card::debug_string() const
 {
   return m_model_card_ptr->DebugString();
 }

@@ -50,6 +50,8 @@ public:
   const std::pair<Card, Card::Suit>* unknown_decision() const;
   const std::vector<Card>* discard_decision() const;
 
+  std::string debug_string() const;
+
 private:
 
   PlayType m_play_tag;

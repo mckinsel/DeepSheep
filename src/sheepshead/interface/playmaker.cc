@@ -191,6 +191,68 @@ const std::vector<Card>* Play::discard_decision() const
   return &m_discard_decision;
 }
 
+std::string Play::debug_string() const
+{
+  std::string output_string("Play type is ");
+
+  switch(m_play_tag) {
+
+    case Play::PlayType::PICK :
+      output_string.append("PICK:\n");
+      switch(m_pick_decision) {
+        case PickDecision::PICK :
+          output_string.append("PICK\n");
+          break;
+        case PickDecision::PASS :
+          output_string.append("PASS\n");
+          break;
+        case PickDecision::UNASKED :
+          output_string.append("UNASKED\n");
+          break;
+      }
+      break;
+
+    case Play::PlayType::LONER :
+      output_string.append("LONER:\n");
+      switch(m_loner_decision) {
+        case LonerDecision::LONER :
+          output_string.append("LONER\n");
+          break;
+        case LonerDecision::PARTNER :
+          output_string.append("PARTNER\n");
+          break;
+        case LonerDecision::NONE :
+          output_string.append("NONE\n");
+          break;
+      }
+      break;
+
+    case Play::PlayType::PARTNER :
+      output_string.append("PARTNER:\n");
+      output_string.append(m_card_decision.debug_string());
+      break;
+
+    case Play::PlayType::UNKNOWN :
+      output_string.append("UNKNOWN:\n");
+      output_string.append(m_unknown_decision.first.debug_string());
+      break;
+
+    case Play::PlayType::DISCARD :
+      output_string.append("DISCARD:\n");
+      for(auto& discard : m_discard_decision) {
+        output_string.append(discard.debug_string());
+      }
+      break;
+
+    case Play::PlayType::TRICK_CARD :
+      output_string.append("TRICK_CARD\n");
+      output_string.append(m_card_decision.debug_string());
+      break;
+  }
+
+  return output_string;
+}
+
 // end Play
 
 // Playmaker
