@@ -142,6 +142,30 @@ TEST(TestTrickWinner, TestFailOrder)
   EXPECT_EQ(winner, *std::next(leader_itr, 0));
 }
 
+TEST(TestTrickWinner, TestAssignNextLeader)
+{
+  auto hand = testplays::TestHand();
+  auto leader_itr =
+    testplays::advance_default_hand_past_picking_round(&hand, true, 0);
+  hand.arbiter().arbitrate();
+
+  using sheepshead::interface::Card;
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::KING),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::EIGHT),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::TEN), // Winner
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::ACE)
+  };
+  hand.mock_laid_cards(0, mocked_laid_cards);
+  auto winner = hand.history().tricks_begin()->winner();
+
+  hand.arbiter().arbitrate();
+  leader_itr = hand.history().latest_trick().leader();
+  EXPECT_EQ(*leader_itr, winner);
+
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   auto results = RUN_ALL_TESTS();

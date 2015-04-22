@@ -72,6 +72,55 @@ TEST(TestTricks, TestFollowLedSuit)
                 sheepshead::interface::Card::Suit::SPADES &&
                 p.trick_card_decision()->rank() ==
                 sheepshead::interface::Card::Rank::SEVEN;}));
+
+  // Play a card and verify that the card shows up
+  hand.playmaker(*follower_itr).make_play(available_plays[0]);
+  EXPECT_EQ(hand.history().latest_trick().number_of_laid_cards(), 2);
+  EXPECT_EQ(hand.seat(*follower_itr).number_of_held_cards(), 5);
+
+  // The follower no longer can play
+  EXPECT_TRUE(hand.is_playable());
+  EXPECT_FALSE(hand.is_arbitrable());
+  available_plays = hand.playmaker(*follower_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 0);
+}
+
+TEST(TestTricks, TestTrickProgession)
+{
+  auto hand = testplays::TestHand();
+  auto leader_itr =
+    testplays::advance_default_hand_past_picking_round(&hand, true, 1);
+
+  EXPECT_TRUE(hand.is_arbitrable());
+  EXPECT_FALSE(hand.is_playable());
+
+  hand.arbiter().arbitrate();
+
+  auto player_itr = leader_itr;
+  std::vector<sheepshead::interface::Play> available_plays;
+
+  do {
+    EXPECT_FALSE(hand.is_arbitrable());
+    EXPECT_TRUE(hand.is_playable());
+
+    available_plays = hand.playmaker(*player_itr).available_plays();
+    EXPECT_GT(available_plays.size(), 0);
+    hand.playmaker(*player_itr).make_play(available_plays[0]);
+    EXPECT_EQ(hand.seat(*player_itr).number_of_held_cards(), 5);
+
+    ++player_itr;
+
+  } while(player_itr != leader_itr);
+
+  EXPECT_EQ(hand.history().latest_trick().number_of_laid_cards(), 5);
+
+  EXPECT_TRUE(hand.is_arbitrable());
+  EXPECT_FALSE(hand.is_playable());
+
+  hand.arbiter().arbitrate();
+
+  EXPECT_FALSE(hand.is_arbitrable());
+  EXPECT_TRUE(hand.is_playable());
 }
 
 // Test that all cards are allowed when the led suit cannot be followed
