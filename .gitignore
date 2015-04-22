@@ -31,3 +31,18 @@
 # protobuf generated files
 *.pb.h
 *.pb.cc
+
+# test executables
+tests/interface/playmaker_partner_test
+tests/interface/playmaker_discard_test
+tests/interface/arbiter_test
+tests/interface/playmaker_trick_test
+tests/interface/playerid_test
+tests/interface/trick_winner_test
+tests/interface/playmaker_pick_test
+tests/interface/playmaker_loner_test
+tests/interface/deck_test
+tests/interface/hand_test
+tests/proto/test
+tests/test.log
+doc/protoc-gen-doc
