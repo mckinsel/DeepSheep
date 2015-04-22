@@ -296,7 +296,8 @@ std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr)
   }
 
   // There some extra rules for partners and pickers
-  if(Rules(hand_ptr).partner_by_called_ace()) {
+  if(!History(hand_ptr).picking_round().partner_card().is_null() &&
+     Rules(hand_ptr).partner_by_called_ace()) {
 
     auto partner_card = History(hand_ptr).picking_round().partner_card();
 

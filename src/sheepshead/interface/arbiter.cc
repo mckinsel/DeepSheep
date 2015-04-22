@@ -27,6 +27,9 @@ void Arbiter::arbitrate()
     return;
   }
 
+  // The second arbitrable state is that the Hand is ready for a new trick to
+  // begin. This can involve figuring out who won the last trick so the new
+  // leader can be determined.
   if(internal::ready_for_next_trick(m_hand_ptr)) {
     internal::prepare_new_trick(m_hand_ptr);
     return;
@@ -52,12 +55,22 @@ namespace internal {
 
 void prepare_new_trick(const MutableHandHandle& hand_ptr)
 {
+  auto last_trick = History(hand_ptr).latest_trick();
   auto new_trick = hand_ptr->add_tricks();
 
+  // If it's the first trick, use the latest
   if(hand_ptr->tricks_size() == 1) {
-    new_trick->set_leader_position(
-        (hand_ptr->picking_round().leader_position())
-        % Rules(hand_ptr).number_of_players());
+    new_trick->set_leader_position(hand_ptr->picking_round().leader_position());
+  } else {
+  // If it's not the first trick, see who won the last trick and make them the
+  // leader
+    auto last_trick_winner = last_trick.winner();
+    for(int i=0; i<Rules(hand_ptr).number_of_players(); i++) {
+      if(PlayerId(hand_ptr, i) == last_trick_winner) {
+        new_trick->set_leader_position(i);
+        break;
+      }
+    }
   }
 }
 
@@ -98,5 +111,3 @@ void initialize_hand(const MutableHandHandle& hand_ptr)
 } // namespace internal    
 } // namespace interface
 } // namespace sheesphead
-    
-

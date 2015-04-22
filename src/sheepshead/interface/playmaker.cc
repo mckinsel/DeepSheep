@@ -442,6 +442,38 @@ bool make_discard_play(MutableHandHandle hand_ptr, const Play& play)
  return true;
 }
 
+bool make_trick_card_play(MutableHandHandle hand_ptr, const Play& play)
+{
+  auto last_model_trick = hand_ptr->mutable_tricks(hand_ptr->tricks_size() - 1);
+  auto player_position = last_model_trick->laid_cards_size();
+  auto new_trick_card = last_model_trick->add_laid_cards();
+
+  auto trick_card = play.trick_card_decision();
+
+  internal::assign_model_suit(new_trick_card, trick_card->true_suit());
+  internal::assign_model_rank(new_trick_card, trick_card->true_rank());
+  if(trick_card->is_unknown()) {
+    new_trick_card->set_unknown(true);
+  }
+
+  auto held_cards = hand_ptr->seats(player_position).held_cards();
+  std::vector<model::Card> new_held_cards;
+  for(auto& held_card : held_cards) {
+    if(held_card.suit() != new_trick_card->suit() ||
+       held_card.rank() != new_trick_card->rank()) {
+      new_held_cards.push_back(held_card);
+    }
+  }
+
+  hand_ptr->mutable_seats(player_position)->clear_held_cards();
+  for(auto new_held_card : new_held_cards) {
+    auto new_card = hand_ptr->mutable_seats(player_position)->add_held_cards();
+    *new_card = new_held_card;
+  }
+
+  return true;
+}
+
 bool Playmaker::make_play(const Play& play)
 {
   PlayerId ready_player;
@@ -487,6 +519,7 @@ bool Playmaker::make_play(const Play& play)
       ready_player = internal::ready_for_trick_play(m_hand_ptr);
       if(ready_player != m_playerid)
         return false;
+      return make_trick_card_play(m_hand_ptr, play);
       break;
 
     default:
