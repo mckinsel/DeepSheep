@@ -79,7 +79,33 @@ Card::Card(const Card& from)
 
 std::string Card::debug_string() const
 {
-  return m_model_card_ptr->DebugString();
+  if(is_null()) return "None";
+
+  std::string out_string;
+  switch (m_model_card_ptr->rank()) {
+    case model::SEVEN : out_string += "SEVEN"; break;
+    case model::EIGHT : out_string += "EIGHT"; break;
+    case model::NINE  : out_string += "NINE"; break;
+    case model::TEN   : out_string += "TEN"; break;
+    case model::JACK  : out_string += "JACK"; break;
+    case model::QUEEN : out_string += "QUEEN"; break;
+    case model::KING  : out_string += "KING"; break;
+    case model::ACE   : out_string += "ACE"; break;
+  }
+  out_string += "-";
+  switch (m_model_card_ptr->suit()) {
+    case model::DIAMONDS : out_string += "DIAMONDS"; break;
+    case model::HEARTS   : out_string += "HEARTS"; break;
+    case model::SPADES   : out_string += "SPADES"; break;
+    case model::CLUBS    : out_string += "CLUBS"; break;
+  }
+  out_string += "-";
+  if(m_model_card_ptr->unknown()) {
+    out_string += "true";
+  } else {
+    out_string += "false";
+  }
+  return out_string;
 }
 
 Card& Card::operator=(const Card& from)

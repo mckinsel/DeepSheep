@@ -178,7 +178,7 @@ TEST(TestPlaymaker, TestPartnerCards)
 
     auto available_plays = hand.playmaker(*player_itr).available_plays();
     
-    std::string debug_string = hand.seat(*player_itr).DebugString();
+    std::string debug_string = hand.seat(*player_itr).debug_string();
     EXPECT_GT(available_plays.size(), 0);
     EXPECT_EQ(available_plays[0].play_type(),
               sheepshead::interface::Play::PlayType::PARTNER);

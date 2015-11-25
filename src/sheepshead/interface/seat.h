@@ -19,7 +19,7 @@ public:
   
   bool is_null() const;  
 
-  std::string DebugString() const;
+  std::string debug_string() const;
 
   CardItr held_cards_begin() const;
   CardItr held_cards_end() const;

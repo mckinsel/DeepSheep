@@ -76,6 +76,9 @@ public:
   //! Whether the PickingRound is finished, and Tricks can begin.
   bool is_finished() const;
 
+  //! Return a string useful for debugging
+  std::string debug_string() const;
+
 private:
   Handle_T m_hand_ptr;
 

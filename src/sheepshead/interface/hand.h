@@ -71,7 +71,10 @@ public:
 
   //! Get a specialized interface to apply the rules of Sheepshead to the Hand.
   Arbiter arbiter();
-   
+
+  //! Get a string useful for debugging
+  std::string debug_string() const;
+
 protected:
   MutableHandHandle m_hand_ptr;
 

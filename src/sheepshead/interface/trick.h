@@ -57,7 +57,7 @@ public:
   //! Return a null player if the Trick is not finished.
   PlayerId winner() const;
 
-  //Card card_played_by_player(PlayerId) const;
+  std::string debug_string() const;
 
 private:
   Handle_T m_hand_ptr;

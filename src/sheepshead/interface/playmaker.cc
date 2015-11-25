@@ -193,59 +193,60 @@ const std::vector<Card>* Play::discard_decision() const
 
 std::string Play::debug_string() const
 {
-  std::string output_string("Play type is ");
+  std::string output_string;
 
   switch(m_play_tag) {
 
     case Play::PlayType::PICK :
-      output_string.append("PICK:\n");
+      output_string.append("PICK:");
       switch(m_pick_decision) {
         case PickDecision::PICK :
-          output_string.append("PICK\n");
+          output_string.append("PICK");
           break;
         case PickDecision::PASS :
-          output_string.append("PASS\n");
+          output_string.append("PASS");
           break;
         case PickDecision::UNASKED :
-          output_string.append("UNASKED\n");
+          output_string.append("UNASKED");
           break;
       }
       break;
 
     case Play::PlayType::LONER :
-      output_string.append("LONER:\n");
+      output_string.append("LONER:");
       switch(m_loner_decision) {
         case LonerDecision::LONER :
-          output_string.append("LONER\n");
+          output_string.append("LONER");
           break;
         case LonerDecision::PARTNER :
-          output_string.append("PARTNER\n");
+          output_string.append("PARTNER");
           break;
         case LonerDecision::NONE :
-          output_string.append("NONE\n");
+          output_string.append("NONE");
           break;
       }
       break;
 
     case Play::PlayType::PARTNER :
-      output_string.append("PARTNER:\n");
+      output_string.append("PARTNER:");
       output_string.append(m_card_decision.debug_string());
       break;
 
     case Play::PlayType::UNKNOWN :
-      output_string.append("UNKNOWN:\n");
+      output_string.append("UNKNOWN:");
       output_string.append(m_unknown_decision.first.debug_string());
       break;
 
     case Play::PlayType::DISCARD :
-      output_string.append("DISCARD:\n");
+      output_string.append("DISCARD:");
       for(auto& discard : m_discard_decision) {
         output_string.append(discard.debug_string());
+        output_string.append(" ");
       }
       break;
 
     case Play::PlayType::TRICK_CARD :
-      output_string.append("TRICK_CARD\n");
+      output_string.append("TRICK_CARD:");
       output_string.append(m_card_decision.debug_string());
       break;
   }

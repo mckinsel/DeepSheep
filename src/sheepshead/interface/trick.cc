@@ -3,6 +3,7 @@
 #include "sheepshead/interface/rules.h"
 
 #include <iostream>
+#include <sstream>
 #include <unordered_map>
 #include <utility>
 
@@ -81,6 +82,21 @@ int Trick<Handle_T>::number_of_laid_cards() const
   if(!this->is_started()) return 0;
 
   return m_hand_ptr->tricks(m_trick_number).laid_cards_size();
+}
+
+template<typename Handle_T>
+std::string Trick<Handle_T>::debug_string() const
+{
+  std::stringstream out_str;
+  out_str << "Trick number ";
+  out_str << m_trick_number << "; ";
+  out_str << "Leader is " << leader()->debug_string() << std::endl;
+
+  for(auto card=laid_cards_begin(); card!=laid_cards_end(); card++) {
+    out_str << card->debug_string() << "; ";
+  }
+
+  return out_str.str();
 }
 
 const std::unordered_map<int, int> TRUMP_RANK_ORDER = {

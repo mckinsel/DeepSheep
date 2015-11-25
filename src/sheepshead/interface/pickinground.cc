@@ -3,6 +3,7 @@
 #include "sheepshead/interface/rules.h"
 
 #include <algorithm>
+#include <sstream>
 
 namespace sheepshead {
 namespace interface {
@@ -157,6 +158,41 @@ bool PickingRound<Handle_T>::is_finished() const
     return true;
 
   return false;
+}
+
+template<typename Handle_T>
+std::string PickingRound<Handle_T>::debug_string() const
+{
+  std::stringstream out_str;
+  out_str << "Picking round ";
+  if(!is_finished()) out_str << "not ";
+  out_str << "finished. Player decisions: ";
+
+  for(auto pick_itr=pick_decisions_begin(); pick_itr!=pick_decisions_end(); pick_itr++) {
+    if(*pick_itr == PickDecision::PICK) {
+      out_str << " PICK ";
+    } else if(*pick_itr == PickDecision::PASS) {
+      out_str << " PASS ";
+    } else if(*pick_itr == PickDecision::UNASKED) {
+      out_str << " UNASKED ";
+    }
+  }
+  out_str << std::endl;
+  out_str << "Loner decision is ";
+  if(loner_decision() == LonerDecision::PARTNER) {
+    out_str << "PARTNER";
+  } else if(loner_decision() == LonerDecision::LONER) {
+    out_str << "LONER";
+  } else if(loner_decision() == LonerDecision::NONE) {
+    out_str << "NONE";
+  }
+  
+  out_str << std::endl;
+  out_str << "Partner card is ";
+  out_str << partner_card().debug_string();
+
+
+  return out_str.str();
 }
 
 template class PickingRound<ConstHandHandle>;

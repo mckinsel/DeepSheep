@@ -1,5 +1,6 @@
 #include "sheepshead/interface/history.h"
 #include <algorithm>
+#include <sstream>
 #include <type_traits>
 
 namespace sheepshead {
@@ -39,6 +40,17 @@ int History::number_of_finished_tricks() const
                          {return t.is_finished();});
 }
 
+std::string History::debug_string() const
+{
+  std::stringstream out_stream;
+  out_stream << picking_round().debug_string() << std::endl;
+  for(auto trick=tricks_begin(); trick!=tricks_end(); trick++) {
+    out_stream << trick->debug_string();
+    out_stream << std::endl;
+  }
+  return out_stream.str();
+}
+
 Trick<decltype(History::m_hand_ptr)> History::latest_trick() const
 {
   int num_started = this->number_of_started_tricks();
@@ -47,6 +59,7 @@ Trick<decltype(History::m_hand_ptr)> History::latest_trick() const
 
   return Trick<decltype(m_hand_ptr)>(m_hand_ptr, num_started - 1);
 }
+
 
 } // namespace interface
 } // namespace sheepshead

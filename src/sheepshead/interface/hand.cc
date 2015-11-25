@@ -1,5 +1,7 @@
 #include "hand.h"
 
+#include <sstream>
+
 namespace sheepshead {
 namespace interface {
 
@@ -80,6 +82,27 @@ bool Hand::is_arbitrable() const
 bool Hand::is_finished() const
 {
   return Arbiter(m_hand_ptr).is_finished();
+}
+
+std::string Hand::debug_string() const
+{
+  std::stringstream out_stream;
+  out_stream << "Hand dealt by " << dealer()->debug_string() << std::endl;
+  if(is_playable()) out_stream << "Hand is playable." << std::endl;
+  if(is_arbitrable()) out_stream << "Hand is arbitrable." << std::endl;
+  if(is_finished()) out_stream << "Hand is finished." << std::endl;
+
+  out_stream << "Hand history:" << std::endl;
+  out_stream << history().debug_string() << std::endl;
+
+  out_stream << "Current seats:" << std::endl;
+  auto player_itr = dealer();
+  do {
+    out_stream << seat(*player_itr).debug_string() << std::endl;
+    ++player_itr;
+  } while(player_itr != dealer());
+
+  return out_stream.str();
 }
 
 } // namespace interface

@@ -36,7 +36,7 @@ bool PlayerId::operator!=(const PlayerId& other) const
 std::string PlayerId::debug_string() const
 {
   std::ostringstream out_stream;
-  out_stream << "Player at position " <<  m_position << std::endl;
+  out_stream << "Player " <<  m_position;
   return out_stream.str();
 }
 
