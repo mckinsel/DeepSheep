@@ -85,6 +85,7 @@ TEST(TestTricks, TestFollowLedSuit)
   EXPECT_EQ(available_plays.size(), 0);
 }
 
+// Test that a trick progresses as expected as cards are played
 TEST(TestTricks, TestTrickProgession)
 {
   auto hand = testplays::TestHand();
@@ -109,6 +110,7 @@ TEST(TestTricks, TestTrickProgession)
     EXPECT_EQ(hand.seat(*player_itr).number_of_held_cards(), 5);
 
     ++player_itr;
+    available_plays.clear();
 
   } while(player_itr != leader_itr);
 
@@ -414,6 +416,65 @@ TEST(TestTricks, TestPartnerFollowsPartnerSuitWithPartnerCard)
 
 // TODO: Test that the constraint on the picker is removed when the partner card has
 // already been played
+
+// Test that the picker follows suit with the called suit when he has to.
+TEST(TestTricks, TestPickerFollowsWithOnlyPartnerSuit)
+{
+  auto hand = testplays::TestHand();
+  hand.arbiter().arbitrate();
+
+  using sheepshead::interface::Card;
+
+  auto player_itr = hand.history().picking_round().leader();
+
+  // First player is going to pass
+  ++player_itr;
+
+  // Second player is going to pick and has only one club
+  std::vector<std::pair<Card::Suit, Card::Rank> > p2_mocked_held_cards {
+    std::make_pair(Card::Suit::DIAMONDS, Card::Rank::NINE),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::EIGHT),
+    std::make_pair(Card::Suit::DIAMONDS, Card::Rank::TEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::DIAMONDS, Card::Rank::QUEEN)};
+  hand.mock_held_cards(*player_itr, p2_mocked_held_cards);
+  --player_itr;
+
+  // And some great blinds
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_blinds {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::QUEEN)};
+  hand.mock_blinds(mocked_blinds);
+
+  hand.playmaker(*player_itr).make_play(testplays::pass);
+  ++player_itr;
+  hand.playmaker(*player_itr).make_play(testplays::pick);
+  hand.playmaker(*player_itr).make_play(testplays::get_partner);
+
+  // Call clubs as partner
+  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
+        [](const sheepshead::interface::Play& p)
+            {return p.partner_decision()->suit() != Card::Suit::CLUBS;}),
+      available_plays.end());
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  // And discard
+  available_plays =  hand.playmaker(*player_itr).available_plays();
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+  hand.arbiter().arbitrate();
+
+  // Now have the first player lead a club
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::TEN)
+  };
+  hand.mock_laid_cards(0, mocked_laid_cards);
+
+  // The second player should only be able to play his only club, the seven
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 1);
+}
 
 // TODO: Test follows suit with unknown correctly
 

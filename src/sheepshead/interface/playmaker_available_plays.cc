@@ -305,6 +305,12 @@ std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr)
     // has been led
     if(History(hand_ptr).picking_round().picker() == player_itr) {
 
+      bool partner_suit_was_led = false;
+      if(player_itr != latest_trick.leader()) {
+        auto led_suit = latest_trick.laid_cards_begin()->suit();
+        partner_suit_was_led = (led_suit == partner_card.suit());
+      }
+
       bool partner_card_already_played = std::any_of(
          History(hand_ptr).tricks_begin(), History(hand_ptr).tricks_end(),
            [&partner_card](const Trick<ConstHandHandle>& t)
@@ -319,7 +325,7 @@ std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr)
             [&partner_card](const Card& c){return c.suit() == partner_card.suit();});
 
       // If there is only one partner suit card in hand, then we can't play it
-      if(!partner_card_already_played && partner_suit_card_count < 2) {
+      if(!partner_card_already_played && !partner_suit_was_led && partner_suit_card_count < 2) {
         permitted_cards.erase(std::remove_if(permitted_cards.begin(),
                               permitted_cards.end(),
               [&partner_card](Card& c){return c.suit() == partner_card.suit();}),
