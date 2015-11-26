@@ -6,7 +6,7 @@ STATIC_LIB_TARGET=build/libsheepshead.a
 .PHONY: doc clean all test
 
 
-all: $(STATIC_LIB_TARGET)
+all: $(STATIC_LIB_TARGET) actors
 
 #################################################################
 ## Build the protocol buffer sources
@@ -26,9 +26,9 @@ proto: $(PROTO_OBJS)
 #################################################################
 ## Build the sheepshead interface sources
 #################################################################
-INTERFACE_CCS=$(wildcard src/sheepshead/interface/*.cc)
-INTERFACE_HS=$(wildcard src/sheepshead/interface/*.h)
-INTERFACE_OBJS   =$(patsubst %.cc,%.o,$(INTERFACE_CCS))
+INTERFACE_CCS  =$(wildcard src/sheepshead/interface/*.cc)
+INTERFACE_HS   =$(wildcard src/sheepshead/interface/*.h)
+INTERFACE_OBJS =$(patsubst %.cc,%.o,$(INTERFACE_CCS))
 
 interface: $(INTERFACE_OBJS) proto
 
@@ -44,6 +44,16 @@ $(STATIC_LIB_TARGET): build $(OBJS)
 	ranlib $@
 
 -include $(DEPENDS)
+
+#################################################################
+## Build the actors
+#################################################################
+ACTOR_CCS  =$(wildcard src/actors/*.cc)
+ACTOR_EXES =$(patsubst %.cc,%,$(ACTOR_CCS))
+
+actors: LDLIBS += -Lbuild -lsheepshead -lprotobuf
+actors: $(STATIC_LIB_TARGET) $(ACTOR_EXES)
+
 
 #################################################################
 ## Build documentation
