@@ -106,7 +106,8 @@ public:
   }
 
   void mock_laid_cards(int trick_number,
-                       std::vector<std::pair<Card::Suit, Card::Rank>> card_ids)
+                       std::vector<std::pair<Card::Suit, Card::Rank>> card_ids,
+                       int unknown_index = -1)
   {
     auto trick = m_hand_ptr->mutable_tricks(trick_number);
     trick->clear_laid_cards();
@@ -115,6 +116,9 @@ public:
       new_card->set_unknown(false);
       sheepshead::interface::internal::assign_model_suit(new_card, card_id.first);
       sheepshead::interface::internal::assign_model_rank(new_card, card_id.second);
+    }
+    if(unknown_index != -1) {
+      trick->mutable_laid_cards(unknown_index)->set_unknown(true);
     }
   }
 };

@@ -573,7 +573,189 @@ TEST(TestTricks, TestPickerFollowsWithOnlyPartnerSuit)
   EXPECT_EQ(available_plays.size(), 1);
 }
 
-// TODO: Test follows suit with unknown correctly
+// Test that the picker follows with the unknown card
+TEST(TestTricks, TestPickerFollowsWithUnknown)
+{
+  auto hand = testplays::TestHand();
+  hand.arbiter().arbitrate();
+  using sheepshead::interface::Card;
+  auto player_itr = hand.history().picking_round().leader();
+
+  // In this test, player two will pick, call a partner, and have to declare a
+  // card unknown
+
+  // Player one's job here is just to pass and then lead a spade
+  std::vector<std::pair<Card::Suit, Card::Rank> > p1_mocked_held_cards {
+    std::make_pair(Card::Suit::SPADES, Card::Rank::NINE),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::EIGHT),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::TEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::KING),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::ACE)};
+  hand.mock_held_cards(*player_itr, p1_mocked_held_cards);
+
+  // Only the ace of spades can be called as the partner card because player
+  // two has the other aces. And, player two has no spades, so he will call a
+  // spades unknown.
+  std::vector<std::pair<Card::Suit, Card::Rank> > p2_mocked_held_cards {
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::ACE),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::ACE),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::EIGHT),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::EIGHT),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::SEVEN)};
+  ++player_itr;
+  hand.mock_held_cards(*player_itr, p2_mocked_held_cards);
+  --player_itr;
+
+  // The blinds also have only hearts and clubs
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_blinds {
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::TEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::TEN)};
+  hand.mock_blinds(mocked_blinds);
+
+  hand.playmaker(*player_itr).make_play(testplays::pass);
+  player_itr++;
+  hand.playmaker(*player_itr).make_play(testplays::pick);
+  hand.playmaker(*player_itr).make_play(testplays::get_partner);
+
+  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  // Only option is ace of spades
+  EXPECT_EQ(available_plays.size(), 1);
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+  available_plays = hand.playmaker(*player_itr).available_plays();
+
+  // Now have to declare a card unknown, the eight of CLUBS
+  EXPECT_EQ(available_plays[0].play_type(), sheepshead::interface::Play::PlayType::UNKNOWN);
+  available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
+        [](const sheepshead::interface::Play& p)
+            {return p.unknown_decision()->first.suit() != Card::Suit::CLUBS ||
+                    p.unknown_decision()->first.rank() != Card::Rank::EIGHT;}),
+      available_plays.end());
+  EXPECT_EQ(available_plays.size(), 1);
+  EXPECT_EQ(available_plays[0].unknown_decision()->first.rank(), Card::Rank::EIGHT);
+  EXPECT_EQ(available_plays[0].unknown_decision()->first.suit(), Card::Suit::CLUBS);
+  EXPECT_EQ(available_plays[0].unknown_decision()->second, Card::Suit::SPADES);
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  // Finally, discard. It doesn't matter what.
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  hand.arbiter().arbitrate();
+  --player_itr;
+
+  // Alright, now have player one play a spade. All he has is spades, but he's
+  // going to have to play the ace
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 1);
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  // Now, it's player 2's turn, and there should be only one option: the eight
+  // of clubs that is now a spades unknown
+  ++player_itr;
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 1);
+  EXPECT_EQ(available_plays[0].trick_card_decision()->true_suit(), Card::Suit::CLUBS);
+  EXPECT_EQ(available_plays[0].trick_card_decision()->true_rank(), Card::Rank::EIGHT);
+  EXPECT_EQ(available_plays[0].trick_card_decision()->rank(), Card::Rank::UNKNOWN);
+  EXPECT_EQ(available_plays[0].trick_card_decision()->suit(), Card::Suit::SPADES);
+}
+
+// Test that the unknown card doesn't win a trick
+TEST(TestTricks, TestUnknownIsFail)
+{
+  auto hand = testplays::TestHand();
+  hand.arbiter().arbitrate();
+  using sheepshead::interface::Card;
+  auto player_itr = hand.history().picking_round().leader();
+
+  // Player one is going to pick, call ace of hearts as partner, and declare
+  // the queen of clubs as hearts unknown
+  std::vector<std::pair<Card::Suit, Card::Rank> > p1_mocked_held_cards {
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::ACE),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::ACE),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::TEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::TEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::EIGHT)};
+  hand.mock_held_cards(*player_itr, p1_mocked_held_cards);
+
+  // Player two is going to follow with the ace of hearts
+  std::vector<std::pair<Card::Suit, Card::Rank> > p2_mocked_held_cards {
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::ACE),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::DIAMONDS, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::JACK),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::JACK)};
+  ++player_itr;
+  hand.mock_held_cards(*player_itr, p2_mocked_held_cards);
+  --player_itr;
+
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_blinds {
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::SPADES, Card::Rank::SEVEN)};
+  hand.mock_blinds(mocked_blinds);
+
+  hand.playmaker(*player_itr).make_play(testplays::pick);
+  hand.playmaker(*player_itr).make_play(testplays::get_partner);
+
+  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 1);
+  EXPECT_EQ(available_plays[0].play_type(), sheepshead::interface::Play::PlayType::PARTNER);
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 8);
+  EXPECT_EQ(available_plays[0].play_type(), sheepshead::interface::Play::PlayType::UNKNOWN);
+  available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
+        [](const sheepshead::interface::Play& p)
+            {return p.unknown_decision()->first.true_suit() != Card::Suit::CLUBS ||
+                    p.unknown_decision()->first.rank() != Card::Rank::QUEEN;}),
+      available_plays.end());
+  EXPECT_EQ(available_plays.size(), 1);
+
+  // Call the unknown and discard
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  hand.arbiter().arbitrate();
+
+  // Now the first player plays the heart unknown
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
+        [](const sheepshead::interface::Play& p)
+            {return p.trick_card_decision()->suit() != Card::Suit::HEARTS;}),
+      available_plays.end());
+  EXPECT_EQ(available_plays.size(), 1);
+  hand.playmaker(*player_itr).make_play(available_plays[0]);
+
+  ++player_itr;
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 1);
+  EXPECT_EQ(available_plays[0].trick_card_decision()->suit(), Card::Suit::HEARTS);
+  EXPECT_EQ(available_plays[0].trick_card_decision()->rank(), Card::Rank::ACE);
+
+  std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
+    std::make_pair(Card::Suit::CLUBS, Card::Rank::QUEEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::ACE),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::TEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::SEVEN),
+    std::make_pair(Card::Suit::HEARTS, Card::Rank::EIGHT)
+  };
+  hand.mock_laid_cards(0, mocked_laid_cards, 0);
+
+  hand.arbiter().arbitrate();
+
+  --player_itr; // back to player 0
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_EQ(available_plays.size(), 0);
+  ++player_itr; // back to player 0
+  available_plays = hand.playmaker(*player_itr).available_plays();
+  EXPECT_GT(available_plays.size(), 0);
+}
 
 // TODO: Test that picker/partner constraints are not applied when partner is
 // jack of diamonds
