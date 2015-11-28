@@ -123,7 +123,8 @@ const std::unordered_map<int, int> FAIL_RANK_ORDER = {
   std::make_pair((int)Card::Rank::KING, 6),
   std::make_pair((int)Card::Rank::NINE, 5),
   std::make_pair((int)Card::Rank::EIGHT, 2),
-  std::make_pair((int)Card::Rank::SEVEN, 1)
+  std::make_pair((int)Card::Rank::SEVEN, 1),
+  std::make_pair((int)Card::Rank::UNKNOWN, 0)
 };
 
 // Returns true if card_1 beats card_2
