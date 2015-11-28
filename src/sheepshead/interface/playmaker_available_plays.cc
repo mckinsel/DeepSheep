@@ -303,7 +303,8 @@ std::vector<Card> get_permitted_trick_plays(ConstHandHandle hand_ptr)
 
     // The picker cannot fail off all partner suit cards before the partner suit
     // has been led
-    if(History(hand_ptr).picking_round().picker() == player_itr) {
+    if(History(hand_ptr).picking_round().picker() == player_itr &&
+       player_itr != latest_trick.leader()) {
 
       bool partner_suit_was_led = false;
       if(player_itr != latest_trick.leader()) {
