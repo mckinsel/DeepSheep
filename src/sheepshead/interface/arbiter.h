@@ -18,8 +18,9 @@ public:
 
 private:
   friend class Hand;
-  Arbiter(const MutableHandHandle& hand_ptr);
+  Arbiter(const MutableHandHandle& hand_ptr, unsigned long random_seed);
   MutableHandHandle m_hand_ptr;
+  unsigned long m_random_seed;
 
 }; // class Arbiter
 

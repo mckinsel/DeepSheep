@@ -10,12 +10,12 @@ namespace sheepshead {
 namespace interface {
 
 namespace internal {
-void initialize_hand(const MutableHandHandle& hand_ptr); // defined below
+void initialize_hand(const MutableHandHandle& hand_ptr, unsigned seed = 0); // defined below
 void prepare_new_trick(const MutableHandHandle& hand_ptr); // defined below
 } // namespace internal
 
-Arbiter::Arbiter(const MutableHandHandle& hand_ptr)
-  : m_hand_ptr(hand_ptr)
+Arbiter::Arbiter(const MutableHandHandle& hand_ptr, unsigned long random_seed)
+  : m_hand_ptr(hand_ptr), m_random_seed(random_seed)
 {}
 
 void Arbiter::arbitrate()
@@ -23,7 +23,7 @@ void Arbiter::arbitrate()
   // The first aribtrable state the Hand can be in is the unitialized state.
   // In this state, nothing's happened, and nobody has any cards yet.
   if(internal::is_uninitialized(m_hand_ptr)) {
-    internal::initialize_hand(m_hand_ptr);
+    internal::initialize_hand(m_hand_ptr, m_random_seed);
     return;
   }
 
@@ -74,7 +74,7 @@ void prepare_new_trick(const MutableHandHandle& hand_ptr)
   }
 }
 
-void initialize_hand(const MutableHandHandle& hand_ptr)
+void initialize_hand(const MutableHandHandle& hand_ptr, unsigned seed)
 {
   // First get the rules so we know how to initialize.
   auto rules = Rules(hand_ptr);
@@ -82,7 +82,7 @@ void initialize_hand(const MutableHandHandle& hand_ptr)
   // Initialize the deck.
   auto deck = internal::Deck();
   deck.initialize_full_deck();
-  deck.shuffle_deck();
+  deck.shuffle_deck(seed);
   
   // Construct the seats and the held cards for each seat 
   for(int player = 0; player < rules.number_of_players(); player++) {

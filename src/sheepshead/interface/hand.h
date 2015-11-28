@@ -28,10 +28,10 @@ class Hand
 {
 public:
   //! Construct a Hand with default rules.
-  Hand();
+  Hand(unsigned long random_seed = 0);
 
   //! Construct a Hand with a specified rule variation.
-  Hand(const Rules& rules);
+  Hand(const Rules& rules, unsigned long random_seed = 0);
 
   //! Construct a Hand by reading a previously serialized Hand from an istream.
   Hand(std::istream* input);
@@ -77,6 +77,9 @@ public:
 
 protected:
   MutableHandHandle m_hand_ptr;
+
+private:
+  unsigned long m_random_seed;
 
 }; // class Hand
 

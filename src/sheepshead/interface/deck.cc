@@ -40,9 +40,14 @@ void Deck::clear()
   m_deck.clear();
 }
 
-void Deck::shuffle_deck()
+void Deck::shuffle_deck(unsigned p_seed)
 {
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  unsigned seed;
+  if(p_seed == 0) {
+    seed = std::chrono::system_clock::now().time_since_epoch().count();
+  } else {
+    seed = p_seed;
+  }
   std::shuffle(m_deck.begin(), m_deck.end(), std::default_random_engine(seed));
 }
 

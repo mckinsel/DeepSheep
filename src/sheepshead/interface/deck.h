@@ -20,7 +20,7 @@ public:
   void initialize_full_deck();
 
   /// Put the Deck in a random order.
-  void shuffle_deck();
+  void shuffle_deck(unsigned p_seed = 0);
 
   /// Empty the Deck.
   void clear();

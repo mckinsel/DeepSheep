@@ -1,18 +1,31 @@
 #include "hand.h"
 
+#include <chrono>
 #include <sstream>
 
 namespace sheepshead {
 namespace interface {
 
-Hand::Hand()
+Hand::Hand(unsigned long random_seed)
 {
   m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
+
+  if(random_seed == 0) {
+    m_random_seed = std::chrono::system_clock::now().time_since_epoch().count();
+  } else {
+    m_random_seed = random_seed;
+  }
 }
 
-Hand::Hand(const Rules& rules)
+Hand::Hand(const Rules& rules, unsigned long random_seed)
 {
   m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
+
+  if(random_seed == 0) {
+    m_random_seed = std::chrono::system_clock::now().time_since_epoch().count();
+  } else {
+    m_random_seed = random_seed;
+  }
 
   auto new_rules = rules.m_hand_ptr->rule_variation();
   auto hand_rules = m_hand_ptr->mutable_rule_variation();
@@ -66,22 +79,22 @@ Playmaker Hand::playmaker(PlayerId playerid)
 
 Arbiter Hand::arbiter()
 {
-  return Arbiter(m_hand_ptr);
+  return Arbiter(m_hand_ptr, m_random_seed);
 }
 
 bool Hand::is_playable() const
 {
-  return Arbiter(m_hand_ptr).is_playable();
+  return Arbiter(m_hand_ptr, m_random_seed).is_playable();
 }
 
 bool Hand::is_arbitrable() const
 {
-  return Arbiter(m_hand_ptr).is_arbitrable();
+  return Arbiter(m_hand_ptr, m_random_seed).is_arbitrable();
 }
 
 bool Hand::is_finished() const
 {
-  return Arbiter(m_hand_ptr).is_finished();
+  return Arbiter(m_hand_ptr, m_random_seed).is_finished();
 }
 
 std::string Hand::debug_string() const
