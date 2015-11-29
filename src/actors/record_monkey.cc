@@ -4,6 +4,8 @@
 #include <iostream>
 #include <random>
 
+#include <assert.h>
+
 /*
  * Attempt to take a turn by finding player that has some available plays
  * and randomly choosing one of them.
@@ -73,4 +75,16 @@ int main(int argc, char* argv[])
       if(result) std::cerr  << "Successfully made a play" << std::endl;
     }
   }
+
+  auto leader_itr = hand.history().picking_round().leader();
+  auto player_itr = leader_itr;
+  int total_reward = 0;
+  do {
+    std::cerr << player_itr->debug_string() << " reward ";
+    std::cerr << hand.reward(*player_itr) << std::endl;
+    total_reward += hand.reward(*player_itr);
+    ++player_itr;
+  } while(player_itr != leader_itr);
+  assert(total_reward == 0);
+
 }
