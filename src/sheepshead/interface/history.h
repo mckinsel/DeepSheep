@@ -42,6 +42,9 @@ public:
   //! The latest Trick being played in the Hand.
   Trick<decltype(m_hand_ptr)> latest_trick() const;
   
+  //! The partner, if is has been revealed.
+  PlayerId partner() const;
+
   //! Get a string helpful for debugging.
   std::string debug_string() const;
 

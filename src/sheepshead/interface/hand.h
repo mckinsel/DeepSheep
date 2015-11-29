@@ -66,7 +66,7 @@ public:
   //! Get the interface to a seat of the Hand.
   Seat seat(PlayerId playerid) const;
 
-  //! Get a specialized interface for a player to change the state of the Hand
+  //! Get a specialized interface for a player to change the state of the Hand.
   Playmaker playmaker(PlayerId);
 
   //! Get a specialized interface to apply the rules of Sheepshead to the Hand.
@@ -74,6 +74,9 @@ public:
 
   //! Get a string useful for debugging
   std::string debug_string() const;
+
+  //! Get the points awarded to the player at the end of the hand.
+  int reward(PlayerId) const;
 
 protected:
   MutableHandHandle m_hand_ptr;

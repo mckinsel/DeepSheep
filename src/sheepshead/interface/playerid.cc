@@ -33,6 +33,11 @@ bool PlayerId::operator!=(const PlayerId& other) const
   return !(*this == other);
 }  
 
+bool PlayerId::operator<(const PlayerId& other) const
+{
+  return m_position < other.m_position;
+}
+
 std::string PlayerId::debug_string() const
 {
   std::ostringstream out_stream;

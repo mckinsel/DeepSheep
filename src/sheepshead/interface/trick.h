@@ -26,21 +26,21 @@ public:
   Trick& operator=(const Trick& from) = default;
 
   //! Construct an interface to the trick_numberth trick of a hand.
-  Trick(const Handle_T& hand_ptr, int trick_number) 
+  Trick(const Handle_T& hand_ptr, int trick_number)
     : m_hand_ptr(hand_ptr), m_trick_number(trick_number) {}
 
   //! Return true if the Trick wraps a null trick, a conceptually non-existent trick.
   bool is_null() const;
-  
+
   /// Return true if the Trick has started.
 
   //! Even if no cards for the trick have been played yet, will
   //! return true if the trick has been created in the model.
-  bool is_started() const; 
+  bool is_started() const;
 
   //! Return true if all cards for the Trick have been played.
   bool is_finished() const;
-  
+
   //! Return an iterator pointing to the player who led.
   PlayerItr leader() const;
 
@@ -57,6 +57,10 @@ public:
   //! Return a null player if the Trick is not finished.
   PlayerId winner() const;
 
+  //! Return the point value of the trick.
+  int point_value(bool include_unknown) const;
+
+  //! Return a string useful for debugging.
   std::string debug_string() const;
 
 private:
@@ -78,7 +82,7 @@ public:
   TrickItr& operator=(const TrickItr& from) = default;
 
   TrickItr(const Handle_T& hand_ptr, int trick_number);
-  
+
   bool is_null() const;
 
   TrickItr& operator++();

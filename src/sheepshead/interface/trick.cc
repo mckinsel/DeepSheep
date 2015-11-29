@@ -30,7 +30,7 @@ bool Trick<Handle_T>::is_started() const
 
   if(m_hand_ptr->tricks_size() <= m_trick_number)
     return false;
-  
+
   return m_hand_ptr->tricks_size() > m_trick_number;
 }
 
@@ -90,7 +90,11 @@ std::string Trick<Handle_T>::debug_string() const
   std::stringstream out_str;
   out_str << "Trick number ";
   out_str << m_trick_number << "; ";
-  out_str << "Leader is " << leader()->debug_string() << std::endl;
+  out_str << "Leader is " << leader()->debug_string();
+  if(is_finished()) {
+    out_str << "; Winner is " << winner().debug_string();
+  }
+  out_str << std::endl;
 
   for(auto card=laid_cards_begin(); card!=laid_cards_end(); card++) {
     out_str << card->debug_string() << "; ";
@@ -189,8 +193,21 @@ PlayerId Trick<Handle_T>::winner() const
     }
     ++player_itr;
   }
-  
+
   return winning_player;
+}
+
+template<typename Handle_T>
+int Trick<Handle_T>::point_value(bool include_unknown) const
+{
+  int point_value = 0;
+  for(auto laid_card_itr=laid_cards_begin(); laid_card_itr!=laid_cards_end(); ++laid_card_itr) {
+    if(!laid_card_itr->is_unknown() || include_unknown) {
+      point_value += laid_card_itr->point_value();
+    }
+  }
+
+  return point_value;
 }
 
 
@@ -212,31 +229,31 @@ template<typename Handle_T>
 TrickItr<Handle_T>& TrickItr<Handle_T>::operator++()
 {
   m_trick_number++;
-  return *this; 
-} 
+  return *this;
+}
 
 template<typename Handle_T>
 TrickItr<Handle_T> TrickItr<Handle_T>::operator++(int)
 {
   auto copy(*this);
-  ++(*this); 
+  ++(*this);
   return copy;
-} 
+}
 
 template<typename Handle_T>
 TrickItr<Handle_T>& TrickItr<Handle_T>::operator--()
 {
   m_trick_number--;
-  return *this; 
-} 
+  return *this;
+}
 
 template<typename Handle_T>
 TrickItr<Handle_T> TrickItr<Handle_T>::operator--(int)
 {
   auto copy(*this);
-  --(*this); 
+  --(*this);
   return copy;
-} 
+}
 
 template<typename Handle_T>
 bool TrickItr<Handle_T>::is_null() const

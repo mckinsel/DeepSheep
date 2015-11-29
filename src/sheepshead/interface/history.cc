@@ -40,6 +40,29 @@ int History::number_of_finished_tricks() const
                          {return t.is_finished();});
 }
 
+PlayerId History::partner() const
+{
+  auto partner_card = picking_round().partner_card();
+  if(partner_card.is_null()) {
+    return PlayerId();
+  }
+
+  for(auto trick_itr=tricks_begin(); trick_itr!=tricks_end(); trick_itr++) {
+
+    auto player_itr = trick_itr->leader();
+
+    for(auto card_itr=trick_itr->laid_cards_begin(); card_itr!=trick_itr->laid_cards_end(); ++card_itr) {
+      if(*card_itr == partner_card) {
+        return *player_itr;
+      }
+      ++player_itr;
+    }
+  }
+
+  // If the partner card has not yet been played, return the null player
+  return PlayerId();
+}
+
 std::string History::debug_string() const
 {
   std::stringstream out_stream;
