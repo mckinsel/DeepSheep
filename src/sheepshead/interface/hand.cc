@@ -12,12 +12,13 @@ namespace interface {
 Hand::Hand(unsigned long random_seed)
 {
   m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
-
+  m_hand_ptr->mutable_rule_variation();
   if(random_seed == 0) {
     m_random_seed = std::chrono::system_clock::now().time_since_epoch().count();
   } else {
     m_random_seed = random_seed;
   }
+
 }
 
 Hand::Hand(const Rules& rules, unsigned long random_seed)
