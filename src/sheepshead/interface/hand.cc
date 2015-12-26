@@ -38,11 +38,13 @@ Hand::Hand(const Rules& rules, unsigned long random_seed)
 
 Hand::Hand(std::istream* input)
 {
+  m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
   m_hand_ptr->ParseFromIstream(input);
 }
 
 Hand::Hand(const std::string& input)
 {
+  m_hand_ptr = std::make_shared<sheepshead::model::Hand> ();
   m_hand_ptr->ParseFromString(input);
 }
 
