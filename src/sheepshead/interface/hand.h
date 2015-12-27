@@ -81,6 +81,14 @@ public:
   //! Get the points awarded to the player at the end of the hand.
   int reward(PlayerId) const;
 
+  //! Get the current player, or the null player if the hand isn't playable.
+  PlayerId current_player() const;
+
+  enum class TurnType {PICK, LONER, PARTNER, UNKNOWN, DISCARD, TRICK_0,
+                       TRICK_1, TRICK_2, TRICK_3, NOT_PLAYABLE};
+  //! Get the current turn, if the hand is playable.
+  TurnType current_turn() const;
+
 protected:
   MutableHandHandle m_hand_ptr;
 

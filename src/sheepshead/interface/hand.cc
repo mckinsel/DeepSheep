@@ -277,6 +277,49 @@ int Hand::reward(PlayerId player_id) const
 
 }
 
+PlayerId Hand::current_player() const
+{
+  if(!is_playable()) {
+    return PlayerId();
+  }
+
+  auto player_itr = dealer();
+  do {
+    auto available_plays_ = available_plays(*player_itr);
+    if(available_plays_.size() > 0) {
+      break;
+    }
+    ++player_itr;
+  } while(true);
+
+  return *player_itr;
+}
+
+Hand::TurnType Hand::current_turn() const
+{
+  auto player = current_player();
+  if(player.is_null()) {
+    return TurnType::NOT_PLAYABLE;
+  }
+  auto available_plays_ = available_plays(player);
+  TurnType turn_type;
+  switch(available_plays_[0].play_type()) {
+    case Play::PlayType::PICK: turn_type = TurnType::PICK; break;
+    case Play::PlayType::LONER: turn_type = TurnType::LONER; break;
+    case Play::PlayType::PARTNER: turn_type = TurnType::PARTNER; break;
+    case Play::PlayType::UNKNOWN: turn_type = TurnType::UNKNOWN; break;
+    case Play::PlayType::DISCARD: turn_type = TurnType::DISCARD; break;
+    case Play::PlayType::TRICK_CARD:
+      switch(history().number_of_finished_tricks()) {
+        case 0: turn_type = TurnType::TRICK_0; break;
+        case 1: turn_type = TurnType::TRICK_1; break;
+        case 2: turn_type = TurnType::TRICK_2; break;
+        case 3: turn_type = TurnType::TRICK_3; break;
+      }
+  }
+  return turn_type;
+}
+
 std::string Hand::debug_string() const
 {
   std::stringstream out_stream;
