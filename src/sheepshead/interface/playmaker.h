@@ -70,7 +70,6 @@ class Playmaker
 {
 public:
   bool make_play(const Play& play);
-  std::vector<Play> available_plays() const;
 
 private:
   friend class Hand;

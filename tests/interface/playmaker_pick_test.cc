@@ -18,7 +18,7 @@ TEST(TestPlaymaker, TestPickPassAvailable)
 
   int counter = 0;
   do {
-    auto available_plays = hand.playmaker(*player_itr).available_plays();
+    auto available_plays = hand.available_plays(*player_itr);
     if(*player_itr == leader) {
       EXPECT_EQ(available_plays.size(), 2);
       // Make sure all the plays have the right type
@@ -53,7 +53,7 @@ void choose_all_pass(sheepshead::interface::Hand* hand)
   auto player_itr = hand->history().picking_round().leader();
   auto leader = *player_itr;
   do {
-    auto available_plays = hand->playmaker(*player_itr).available_plays();
+    auto available_plays = hand->available_plays(*player_itr);
     EXPECT_EQ(available_plays.size(), 2);
 
     EXPECT_TRUE(hand->playmaker(*player_itr).make_play(testplays::pass));
@@ -105,7 +105,7 @@ TEST(TestPlaymaker, TestForcedPick)
   auto player_itr = hand.history().picking_round().leader();
   auto last_picker = *std::prev(player_itr);
   do {
-    auto available_plays = hand.playmaker(*player_itr).available_plays();
+    auto available_plays = hand.available_plays(*player_itr);
     EXPECT_EQ(available_plays.size(), 2);
 
     auto pass_play = sheepshead::interface::Play(
@@ -115,7 +115,7 @@ TEST(TestPlaymaker, TestForcedPick)
     ++player_itr;
   } while(*player_itr != last_picker);
 
-  auto available_plays = hand.playmaker(last_picker).available_plays();
+  auto available_plays = hand.available_plays(last_picker);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(*(available_plays[0].pick_decision()),
             sheepshead::interface::PickDecision::PICK);
@@ -135,7 +135,7 @@ TEST(TestPlaymaker, TestPickNoPartnerLeadsToDiscard)
   EXPECT_TRUE(hand.playmaker(*player_itr).make_play(testplays::pick));
   EXPECT_TRUE(hand.is_playable());
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays[0].play_type(),
       sheepshead::interface::Play::PlayType::DISCARD);
 }

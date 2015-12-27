@@ -17,8 +17,7 @@ TEST(TestDiscards, TestDiscardCountDefaultRulesLoner)
     EXPECT_TRUE(hand.playmaker(*player_itr)
                 .make_play(testplays::go_alone));
 
-    auto available_plays = hand.playmaker(*player_itr)
-                          .available_plays(); 
+    auto available_plays = hand.available_plays(*player_itr);
     
     EXPECT_GT(available_plays.size(), 0);
     EXPECT_EQ(available_plays[0].play_type(),
@@ -47,8 +46,7 @@ TEST(TestDiscards, TestDiscardCountDefaultRulesPartner)
                 .make_play(testplays::get_partner));
 
     
-    auto available_plays = hand.playmaker(*player_itr)
-                          .available_plays(); 
+    auto available_plays = hand.available_plays(*player_itr);
     EXPECT_GT(available_plays.size(), 0);
     EXPECT_EQ(available_plays[0].play_type(),
               sheepshead::interface::Play::PlayType::PARTNER);
@@ -56,15 +54,13 @@ TEST(TestDiscards, TestDiscardCountDefaultRulesPartner)
     EXPECT_TRUE(hand.playmaker(*player_itr)
                 .make_play(available_plays[0]));
 
-    available_plays = hand.playmaker(*player_itr)
-                      .available_plays(); 
+    available_plays = hand.available_plays(*player_itr);
 
     if(available_plays[0].play_type() ==
         sheepshead::interface::Play::PlayType::UNKNOWN)  {
       EXPECT_TRUE(hand.playmaker(*player_itr)
                   .make_play(available_plays[0]));
-      available_plays = hand.playmaker(*player_itr)
-                        .available_plays(); 
+      available_plays = hand.available_plays(*player_itr);
     }
 
     EXPECT_GT(available_plays.size(), 0);
@@ -92,8 +88,7 @@ TEST(TestDiscards, TestDiscardCountThreePlayer)
 
   // Recall the three player games permit no partner
   
-  auto available_plays = hand.playmaker(*player_itr)
-                        .available_plays(); 
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_GT(available_plays.size(), 0);
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::DISCARD);
@@ -118,8 +113,7 @@ TEST(TestDiscards, TestDiscardCountFourPlayer)
 
   // Recall the four player games permit no partner
   
-  auto available_plays = hand.playmaker(*player_itr)
-                        .available_plays(); 
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_GT(available_plays.size(), 0);
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::DISCARD);
@@ -158,7 +152,7 @@ TEST(TestDiscards, TestDoNotDiscardOnlyFail)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::PARTNER);
@@ -169,7 +163,7 @@ TEST(TestDiscards, TestDoNotDiscardOnlyFail)
 
 
   hand.playmaker(*player_itr).make_play(available_plays[0]);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
 
   // Every pair of cards that doesn't have the eight of spaces is allowed, so
   // we want 7 choose 2 = 21 options
@@ -210,7 +204,7 @@ TEST(TestDiscards, TestDoNotDiscardBothFail)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::PARTNER);
@@ -221,7 +215,7 @@ TEST(TestDiscards, TestDoNotDiscardBothFail)
 
 
   hand.playmaker(*player_itr).make_play(available_plays[0]);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
 
   // The only forbidden pair is both spade fails, so we want C(8,2) - 1 = 27
   EXPECT_EQ(available_plays.size(), 27);
@@ -257,7 +251,7 @@ TEST(TestDiscards, TestLonerAnythingGoes)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::go_alone);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
 
   // The only forbidden pair is both spade fails, so we want C(8,2) - 1 = 27
   EXPECT_EQ(available_plays.size(), 28);

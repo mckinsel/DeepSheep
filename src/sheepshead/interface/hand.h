@@ -69,6 +69,9 @@ public:
   //! Get a specialized interface for a player to change the state of the Hand.
   Playmaker playmaker(PlayerId);
 
+  //! Get the vector of available plays for a player
+  std::vector<Play> available_plays(PlayerId) const;
+
   //! Get a specialized interface to apply the rules of Sheepshead to the Hand.
   Arbiter arbiter();
 

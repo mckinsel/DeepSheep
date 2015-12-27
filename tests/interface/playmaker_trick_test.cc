@@ -25,7 +25,7 @@ TEST(TestTricks, TestTrickAfterPickingRound)
   EXPECT_TRUE(hand.is_playable());
   EXPECT_FALSE(hand.is_finished());
 
-  auto available_plays = hand.playmaker(leader_id).available_plays();
+  auto available_plays = hand.available_plays(leader_id);
   EXPECT_GT(available_plays.size(), 0);
 
   EXPECT_EQ(available_plays[0].play_type(),
@@ -57,7 +57,7 @@ TEST(TestTricks, TestFollowLedSuit)
     std::make_pair(Card::Suit::SPADES, Card::Rank::NINE)};
   hand.mock_held_cards(*follower_itr, mocked_held_cards);
 
-  auto available_plays = hand.playmaker(*follower_itr).available_plays();
+  auto available_plays = hand.available_plays(*follower_itr);
   EXPECT_EQ(available_plays.size(), 2);
 
   EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
@@ -81,7 +81,7 @@ TEST(TestTricks, TestFollowLedSuit)
   // The follower no longer can play
   EXPECT_TRUE(hand.is_playable());
   EXPECT_FALSE(hand.is_arbitrable());
-  available_plays = hand.playmaker(*follower_itr).available_plays();
+  available_plays = hand.available_plays(*follower_itr);
   EXPECT_EQ(available_plays.size(), 0);
 }
 
@@ -104,7 +104,7 @@ TEST(TestTricks, TestTrickProgession)
     EXPECT_FALSE(hand.is_arbitrable());
     EXPECT_TRUE(hand.is_playable());
 
-    available_plays = hand.playmaker(*player_itr).available_plays();
+    available_plays = hand.available_plays(*player_itr);
     EXPECT_GT(available_plays.size(), 0);
     hand.playmaker(*player_itr).make_play(available_plays[0]);
     EXPECT_EQ(hand.seat(*player_itr).number_of_held_cards(), 5);
@@ -150,7 +150,7 @@ TEST(TestTricks, TestDoNotFollowWhenCannot)
     std::make_pair(Card::Suit::CLUBS, Card::Rank::NINE)};
   hand.mock_held_cards(*follower_itr, mocked_held_cards);
 
-  auto available_plays = hand.playmaker(*follower_itr).available_plays();
+  auto available_plays = hand.available_plays(*follower_itr);
   EXPECT_EQ(available_plays.size(), 6);
 }
 
@@ -178,7 +178,7 @@ TEST(TestTricks, TestFollowTrump)
     std::make_pair(Card::Suit::DIAMONDS, Card::Rank::NINE)}; //trump
   hand.mock_held_cards(*follower_itr, mocked_held_cards);
 
-  auto available_plays = hand.playmaker(*follower_itr).available_plays();
+  auto available_plays = hand.available_plays(*follower_itr);
   EXPECT_EQ(available_plays.size(), 3);
 
   EXPECT_EQ(1, std::count_if(available_plays.begin(), available_plays.end(),
@@ -240,7 +240,7 @@ TEST(TestTricks, TestPickerKeepsPartnerFail)
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
   // Then the second player selects ace of clubs as the partner card
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 2); // spades or clubs
   available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
         [](const sheepshead::interface::Play& p)
@@ -250,7 +250,7 @@ TEST(TestTricks, TestPickerKeepsPartnerFail)
 
   // And discards. He won't discard the nine of clubs because it's his only
   // club
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   hand.arbiter().arbitrate();
@@ -262,7 +262,7 @@ TEST(TestTricks, TestPickerKeepsPartnerFail)
     std::make_pair(Card::Suit::HEARTS, Card::Rank::NINE)
   };
   hand.mock_laid_cards(0, mocked_laid_cards);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 5);
 
   EXPECT_TRUE(std::none_of(available_plays.begin(), available_plays.end(),
@@ -315,7 +315,7 @@ TEST(TestTricks, TestPartnerDoesNotLeadPartnerSuit)
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
   // Then the second player selects ace of clubs as the partner card
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 2); // spades or clubs
   available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
         [](const sheepshead::interface::Play& p)
@@ -325,7 +325,7 @@ TEST(TestTricks, TestPartnerDoesNotLeadPartnerSuit)
 
   // And discards. He won't discard the nine of clubs because it's his only
   // club
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   hand.arbiter().arbitrate();
@@ -333,7 +333,7 @@ TEST(TestTricks, TestPartnerDoesNotLeadPartnerSuit)
   // Now, see what the first player can play. This should be anything except a
   // club that isn't the ace of clubs
   player_itr = hand.history().picking_round().leader();
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 4);
 
   EXPECT_TRUE(std::none_of(available_plays.begin(), available_plays.end(),
@@ -385,7 +385,7 @@ TEST(TestTricks, TestPartnerFollowsPartnerSuitWithPartnerCard)
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
   // Then the first player selects ace of clubs as the partner card
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 2); // spades or clubs
   available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
         [](const sheepshead::interface::Play& p)
@@ -395,7 +395,7 @@ TEST(TestTricks, TestPartnerFollowsPartnerSuitWithPartnerCard)
 
   // And discards. He won't discard the nine of clubs because it's his only
   // club
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   hand.arbiter().arbitrate();
@@ -408,7 +408,7 @@ TEST(TestTricks, TestPartnerFollowsPartnerSuitWithPartnerCard)
   hand.mock_laid_cards(0, mocked_laid_cards);
 
   ++player_itr;
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].trick_card_decision()->suit(), Card::Suit::CLUBS);
   EXPECT_EQ(available_plays[0].trick_card_decision()->rank(), Card::Rank::ACE);
@@ -457,12 +457,12 @@ TEST(TestTricks, TestPickerFreedAfterPartnerCardIsPlayed)
   // partner card
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1); // clubs is the only available fail
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   // Discard two trump
-  auto available_discards = hand.playmaker(*player_itr).available_plays();
+  auto available_discards = hand.available_plays(*player_itr);
   available_discards.erase(std::remove_if(available_discards.begin(), available_discards.end(),
         [](const sheepshead::interface::Play& p)
             {return std::count_if(p.discard_decision()->begin(), p.discard_decision()->end(),
@@ -475,7 +475,7 @@ TEST(TestTricks, TestPickerFreedAfterPartnerCardIsPlayed)
 
   // Now player 1 has two clubs, the seven and eight. Lead the seven to
   // get player 2 to play the ace.
-  auto available_trick_cards = hand.playmaker(*player_itr).available_plays();
+  auto available_trick_cards = hand.available_plays(*player_itr);
   available_trick_cards.erase(std::remove_if(available_trick_cards.begin(), available_trick_cards.end(),
         [](const sheepshead::interface::Play& p)
             {return p.trick_card_decision()->suit() != Card::Suit::CLUBS || p.trick_card_decision()->rank() != Card::Rank::SEVEN;}),
@@ -484,7 +484,7 @@ TEST(TestTricks, TestPickerFreedAfterPartnerCardIsPlayed)
   hand.playmaker(*player_itr).make_play(available_trick_cards[0]);
 
   ++player_itr;
-  available_trick_cards = hand.playmaker(*player_itr).available_plays();
+  available_trick_cards = hand.available_plays(*player_itr);
   EXPECT_EQ(available_trick_cards.size(), 1); // just the ace of clubs
 
   std::vector<std::pair<Card::Suit, Card::Rank> > mocked_laid_cards {
@@ -505,7 +505,7 @@ TEST(TestTricks, TestPickerFreedAfterPartnerCardIsPlayed)
   };
   hand.mock_laid_cards(1, mocked_second_laid_cards);
   --player_itr;
-  available_trick_cards = hand.playmaker(*player_itr).available_plays();
+  available_trick_cards = hand.available_plays(*player_itr);
 
   // This is the whole point of all this. The picker has one club and no
   // hearts, but he's free to fail off the club now because the ace has already
@@ -550,7 +550,7 @@ TEST(TestTricks, TestPickerFollowsWithOnlyPartnerSuit)
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
   // Call clubs as partner
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
         [](const sheepshead::interface::Play& p)
             {return p.partner_decision()->suit() != Card::Suit::CLUBS;}),
@@ -558,7 +558,7 @@ TEST(TestTricks, TestPickerFollowsWithOnlyPartnerSuit)
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   // And discard
-  available_plays =  hand.playmaker(*player_itr).available_plays();
+  available_plays =  hand.available_plays(*player_itr);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
   hand.arbiter().arbitrate();
 
@@ -569,7 +569,7 @@ TEST(TestTricks, TestPickerFollowsWithOnlyPartnerSuit)
   hand.mock_laid_cards(0, mocked_laid_cards);
 
   // The second player should only be able to play his only club, the seven
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
 }
 
@@ -619,11 +619,11 @@ TEST(TestTricks, TestPickerFollowsWithUnknown)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   // Only option is ace of spades
   EXPECT_EQ(available_plays.size(), 1);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
 
   // Now have to declare a card unknown, the eight of CLUBS
   EXPECT_EQ(available_plays[0].play_type(), sheepshead::interface::Play::PlayType::UNKNOWN);
@@ -639,7 +639,7 @@ TEST(TestTricks, TestPickerFollowsWithUnknown)
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   // Finally, discard. It doesn't matter what.
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   hand.arbiter().arbitrate();
@@ -647,14 +647,14 @@ TEST(TestTricks, TestPickerFollowsWithUnknown)
 
   // Alright, now have player one play a spade. All he has is spades, but he's
   // going to have to play the ace
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   // Now, it's player 2's turn, and there should be only one option: the eight
   // of clubs that is now a spades unknown
   ++player_itr;
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].trick_card_decision()->true_suit(), Card::Suit::CLUBS);
   EXPECT_EQ(available_plays[0].trick_card_decision()->true_rank(), Card::Rank::EIGHT);
@@ -701,12 +701,12 @@ TEST(TestTricks, TestUnknownIsFail)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].play_type(), sheepshead::interface::Play::PlayType::PARTNER);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 8);
   EXPECT_EQ(available_plays[0].play_type(), sheepshead::interface::Play::PlayType::UNKNOWN);
   available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
@@ -718,13 +718,13 @@ TEST(TestTricks, TestUnknownIsFail)
 
   // Call the unknown and discard
   hand.playmaker(*player_itr).make_play(available_plays[0]);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   hand.arbiter().arbitrate();
 
   // Now the first player plays the heart unknown
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   available_plays.erase(std::remove_if(available_plays.begin(), available_plays.end(),
         [](const sheepshead::interface::Play& p)
             {return p.trick_card_decision()->suit() != Card::Suit::HEARTS;}),
@@ -733,7 +733,7 @@ TEST(TestTricks, TestUnknownIsFail)
   hand.playmaker(*player_itr).make_play(available_plays[0]);
 
   ++player_itr;
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].trick_card_decision()->suit(), Card::Suit::HEARTS);
   EXPECT_EQ(available_plays[0].trick_card_decision()->rank(), Card::Rank::ACE);
@@ -750,10 +750,10 @@ TEST(TestTricks, TestUnknownIsFail)
   hand.arbiter().arbitrate();
 
   --player_itr; // back to player 0
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 0);
   ++player_itr; // back to player 0
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_GT(available_plays.size(), 0);
 }
 

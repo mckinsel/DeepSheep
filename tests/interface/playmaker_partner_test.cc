@@ -20,8 +20,8 @@ TEST(TestPlaymaker, TestGoAloneLeadsToDiscard)
               .make_play(testplays::go_alone));
   EXPECT_TRUE(hand.is_playable());
 
-  auto available_plays = hand.playmaker(*player_itr)
-                         .available_plays(); 
+  auto available_plays = hand.available_plays(*player_itr);
+
   EXPECT_GT(available_plays.size(), 0);
 
   EXPECT_EQ(available_plays[0].play_type(),
@@ -43,8 +43,8 @@ TEST(TestPlaymaker, TestNoAloneLeadsToPartner)
               .make_play(testplays::get_partner));
   EXPECT_TRUE(hand.is_playable());
 
-  auto available_plays = hand.playmaker(*player_itr)
-                         .available_plays(); 
+  auto available_plays = hand.available_plays(*player_itr);
+
   EXPECT_GT(available_plays.size(), 0);
 
   EXPECT_EQ(available_plays[0].play_type(),
@@ -77,7 +77,7 @@ TEST(TestPlaymaker, TestPartnerJDToDiscard)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_GT(available_plays.size(), 0);
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::DISCARD);
@@ -176,7 +176,7 @@ TEST(TestPlaymaker, TestPartnerCards)
     hand.playmaker(*player_itr).make_play(testplays::pick);
     hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-    auto available_plays = hand.playmaker(*player_itr).available_plays();
+    auto available_plays = hand.available_plays(*player_itr);
     
     std::string debug_string = hand.seat(*player_itr).debug_string();
     EXPECT_GT(available_plays.size(), 0);
@@ -217,7 +217,7 @@ TEST(TestPlaymaker, TestHasOneAvailableOffsuit)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::PARTNER);
@@ -252,7 +252,7 @@ TEST(TestPlaymaker, TestHasNoAcesAllFail)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 3);
   EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
         [](sheepshead::interface::Play p)
@@ -262,7 +262,7 @@ TEST(TestPlaymaker, TestHasNoAcesAllFail)
         {return p.partner_decision()->rank() == sheepshead::interface::Card::Rank::ACE;}));
 
   hand.playmaker(*player_itr).make_play(available_plays[0]);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
         [](sheepshead::interface::Play p)
         {return p.play_type() == sheepshead::interface::Play::PlayType::DISCARD;}));
@@ -294,7 +294,7 @@ TEST(TestPlaymaker, TestAllTrumpTwoAces)
   EXPECT_EQ(hand.seat(*player_itr).number_of_held_cards(), 8);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_EQ(available_plays.size(), 1);
   EXPECT_EQ(available_plays[0].play_type(),
             sheepshead::interface::Play::PlayType::PARTNER);
@@ -305,7 +305,7 @@ TEST(TestPlaymaker, TestAllTrumpTwoAces)
 
   // Make the partner play
   hand.playmaker(*player_itr).make_play(available_plays[0]);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_GT(available_plays.size(), 0);
   EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
         [](sheepshead::interface::Play p)
@@ -343,7 +343,7 @@ TEST(TestPlaymaker, TestNoFailAces)
   hand.playmaker(*player_itr).make_play(testplays::pick);
   hand.playmaker(*player_itr).make_play(testplays::get_partner);
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   // Two aces could be called with unknown here
   EXPECT_EQ(available_plays.size(), 2);
   EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
@@ -362,7 +362,7 @@ TEST(TestPlaymaker, TestNoFailAces)
         {return p.partner_decision()->suit() == sheepshead::interface::Card::Suit::HEARTS;}));
 
   hand.playmaker(*player_itr).make_play(available_plays[0]);
-  available_plays = hand.playmaker(*player_itr).available_plays();
+  available_plays = hand.available_plays(*player_itr);
   EXPECT_GT(available_plays.size(), 0);
   EXPECT_TRUE(std::all_of(available_plays.begin(), available_plays.end(),
         [](sheepshead::interface::Play p)

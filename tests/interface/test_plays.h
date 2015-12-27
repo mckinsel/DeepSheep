@@ -49,11 +49,11 @@ advance_default_hand_past_picking_round(
     hand->playmaker(*player_itr).make_play(go_alone);
   }
 
-  std::vector<sheepshead::interface::Play> available_plays;
+  std::vector<sheepshead::interface::Play> available_plays_;
   do {
-    available_plays = hand->playmaker(*player_itr).available_plays();
-    hand->playmaker(*player_itr).make_play(available_plays[0]);
-  } while(available_plays[0].play_type() !=
+    available_plays_ = hand->available_plays(*player_itr);
+    hand->playmaker(*player_itr).make_play(available_plays_[0]);
+  } while(available_plays_[0].play_type() !=
           sheepshead::interface::Play::PlayType::DISCARD);
 
   return hand->history().picking_round().leader();

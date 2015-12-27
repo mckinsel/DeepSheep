@@ -1,4 +1,6 @@
 #include "hand.h"
+#include "handstate.h"
+#include "playmaker_available_plays.h"
 
 #include <algorithm>
 #include <chrono>
@@ -81,6 +83,93 @@ Seat Hand::seat(PlayerId playerid) const
 Playmaker Hand::playmaker(PlayerId playerid)
 {
   return Playmaker(m_hand_ptr, playerid);
+}
+
+std::vector<Play> Hand::available_plays(PlayerId playerid) const
+{
+  std::vector<Play> plays;
+
+  // If the hand cannot be played, just return an empty vector.
+  if(!internal::is_playable(m_hand_ptr)) return plays;
+
+  // The pick decision
+  if(internal::ready_for_pick_play(m_hand_ptr) == playerid) {
+    // Handle the last picker forced pick rule
+    if(*std::prev(History(m_hand_ptr).picking_round().leader()) == playerid &&
+       Rules(m_hand_ptr).no_picker_forced_pick()) {
+      plays.emplace_back(Play::PlayType::PICK, PickDecision::PICK);
+    } else {
+      plays.emplace_back(Play::PlayType::PICK, PickDecision::PICK);
+      plays.emplace_back(Play::PlayType::PICK, PickDecision::PASS);
+  }
+    return plays;
+  }
+
+  // The loner decision
+  if(internal::ready_for_loner_play(m_hand_ptr) == playerid) {
+    plays.emplace_back(Play::PlayType::LONER, LonerDecision::LONER);
+
+    // To know if a partner call is available, we have to make sure that it
+    // isn't the case the jack of diamonds is partner and the picker has it.
+    if(!Rules(m_hand_ptr).partner_by_jack_of_diamonds()) {
+      plays.emplace_back(Play::PlayType::LONER, LonerDecision::PARTNER);
+    } else {
+      auto picker_seat = internal::get_picker_seat(m_hand_ptr);
+      if(!std::any_of(picker_seat.held_cards_begin(), picker_seat.held_cards_end(),
+            [](Card card){return card.true_suit() == Card::Suit::DIAMONDS &&
+                                 card.true_rank() == Card::Rank::JACK;})) {
+      plays.emplace_back(Play::PlayType::LONER, LonerDecision::PARTNER);
+      }
+    }
+    return plays;
+  }
+
+  // The called partner decision
+  if(internal::ready_for_partner_play(m_hand_ptr) == playerid) {
+    auto cards = internal::get_permitted_partner_cards(m_hand_ptr);
+    for(auto card : cards) {
+      plays.emplace_back(Play::PlayType::PARTNER, card);
+    }
+    return plays;
+  }
+
+  // The unknown card decision
+  if(internal::ready_for_unknown_play(m_hand_ptr) == playerid) {
+
+    // Permitted unknown cards are just any card in the picker's hand I think
+    auto picker_seat = internal::get_picker_seat(m_hand_ptr);
+    auto model_partner_card = m_hand_ptr->picking_round().partner_card();
+    auto partner_card = Card(m_hand_ptr, model_partner_card);
+    for(auto card_itr=picker_seat.held_cards_begin();
+             card_itr!=picker_seat.held_cards_end();
+             ++card_itr)
+    {
+      plays.emplace_back(Play::PlayType::UNKNOWN,
+                         std::make_pair(*card_itr, partner_card.suit()));
+    }
+    return plays;
+  }
+
+  // The discard decision
+  if(internal::ready_for_discard_play(m_hand_ptr) == playerid) {
+    auto discard_vectors = internal::get_permitted_discards(m_hand_ptr);
+    for(auto& discard_vector : discard_vectors) {
+      plays.emplace_back(Play::PlayType::DISCARD, discard_vector);
+    }
+    return plays;
+  }
+
+  // A trick card decision
+  if(internal::ready_for_trick_play(m_hand_ptr) == playerid) {
+    auto trick_cards = internal::get_permitted_trick_plays(m_hand_ptr);
+    for(auto& trick_card : trick_cards) {
+      plays.emplace_back(Play::PlayType::TRICK_CARD, trick_card);
+    }
+    return plays;
+  }
+
+  return plays;
+
 }
 
 Arbiter Hand::arbiter()

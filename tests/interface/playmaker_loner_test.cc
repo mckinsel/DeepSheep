@@ -37,7 +37,7 @@ TEST(TestPlaymaker, TestPickLeadsToLoner)
 
   EXPECT_TRUE(hand.is_playable());
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   check_proper_loner(available_plays);
 
   // Now try again, but not having the leader pick
@@ -52,7 +52,8 @@ TEST(TestPlaymaker, TestPickLeadsToLoner)
   EXPECT_EQ(second_hand.seat(*player_itr).number_of_held_cards(), 8);
   EXPECT_EQ(second_hand.history().picking_round().blinds().size(), 0);
   EXPECT_TRUE(second_hand.is_playable());
-  available_plays = second_hand.playmaker(*player_itr).available_plays();
+  available_plays = second_hand.available_plays(*player_itr);
+  available_plays = second_hand.available_plays(*player_itr);
   check_proper_loner(available_plays);
 }
 
@@ -73,7 +74,7 @@ TEST(TestPlaymaker, TestPickerWithJDMustGoAlone)
     EXPECT_TRUE(hand.playmaker(*player_itr).make_play(testplays::pick));
     EXPECT_TRUE(hand.is_playable());
 
-    auto available_plays = hand.playmaker(*player_itr).available_plays();
+    auto available_plays = hand.available_plays(*player_itr);
 
     bool has_jd = std::any_of(hand.seat(*player_itr).held_cards_begin(),
                               hand.seat(*player_itr).held_cards_end(),
@@ -107,7 +108,7 @@ TEST(TestPlaymaker, TestPartnerLonerToPartnerCard)
 
   EXPECT_TRUE(hand.is_playable());
 
-  auto available_plays = hand.playmaker(*player_itr).available_plays();
+  auto available_plays = hand.available_plays(*player_itr);
   EXPECT_GT(available_plays.size(), 0);
   EXPECT_LE(available_plays.size(), 3);
 
