@@ -13,39 +13,28 @@
 bool try_to_play(sheepshead::interface::Hand* hand, std::default_random_engine& generator)
 {
   std::cerr << "\n*******\nTrying to play " << std::endl;
-  auto leader_itr = hand->history().picking_round().leader();
-  auto player_itr = leader_itr;
 
+  auto current_player_id = hand->current_player();
+  auto available_plays = hand->available_plays(current_player_id);
 
-  do {
-    auto available_plays = hand->playmaker(*player_itr).available_plays();
+  std::cerr<< hand->debug_string() << std::endl;
+  std::cerr << current_player_id.debug_string();
+  std::cerr << " has " << available_plays.size() << " available plays." << std::endl;
 
+  for(auto& available_play : available_plays) {
+    std::cerr << available_play.debug_string() << "; ";
+  }
+  std::cerr << std::endl;
 
-    if(available_plays.size() > 0) {
-      std::cerr<< hand->debug_string() << std::endl;
-      std::cerr << player_itr->debug_string();
-      std::cerr << " has " << available_plays.size() << " available plays." << std::endl;
+  std::uniform_int_distribution<int>
+    distribution(0, available_plays.size() - 1);
 
-      for(auto& available_play : available_plays) {
-        std::cerr << available_play.debug_string() << "; ";
-      }
-      std::cerr << std::endl;
+  unsigned int chosen_play = distribution(generator);
 
-      std::uniform_int_distribution<int>
-        distribution(0, available_plays.size() - 1);
+  std::cerr << "Chosen play is " << available_plays[chosen_play].debug_string() << std::endl;
 
-      unsigned int chosen_play = distribution(generator);
-
-      std::cerr << "Chosen play is " << available_plays[chosen_play].debug_string() << std::endl;
-
-      hand->playmaker(*player_itr).make_play(available_plays[chosen_play]);
-      return true;
-    }
-
-    ++player_itr;
-  } while(player_itr != leader_itr);
-
-  return false;
+  hand->playmaker(current_player_id).make_play(available_plays[chosen_play]);
+  return true;
 }
 
 int main(int argc, char* argv[])
