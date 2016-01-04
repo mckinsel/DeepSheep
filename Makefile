@@ -1,12 +1,13 @@
 CPPFLAGS        +=-MMD
-CXXFLAGS        +=-Isrc -std=c++11 -Wall -Wextra -g
+CXXFLAGS        +=-Isrc -std=c++11 -Wall -Wextra -O3
 
 STATIC_LIB_TARGET=build/libsheepshead.a
+LEARNING_LIB_TARGET=build/liblearning.a
 
 .PHONY: doc clean all test
 
 
-all: $(STATIC_LIB_TARGET) actors
+all: $(STATIC_LIB_TARGET) $(LEARNING_LIB_TARGET) actors
 
 #################################################################
 ## Build the protocol buffer sources
@@ -46,12 +47,30 @@ $(STATIC_LIB_TARGET): build $(OBJS)
 -include $(DEPENDS)
 
 #################################################################
+## Build the learning sources
+#################################################################
+LEARNING_CCS  =$(wildcard src/learning/*.cc)
+LEARNING_HS   =$(wildcard src/learning/*.h)
+LEARNING_OBJS =$(patsubst %.cc,%.o,$(LEARNING_CCS))
+
+LEARNING_DEPENDS=$(LEARNING_OBJS:.o=.d)
+
+learning: LDLIBS += -Lbuild -lsheepshead -lprotobuf
+learning: $(STATIC_LIB_TARGET) $(LEARNING_OBJS)
+
+$(LEARNING_LIB_TARGET): CXXFLAGS += -fPIC
+$(LEARNING_LIB_TARGET): build $(LEARNING_OBJS)
+	ar rcs $@ $(LEARNING_OBJS)
+	ranlib $@
+
+-include $(LEARNING_DEPENDS)
+#################################################################
 ## Build the actors
 #################################################################
 ACTOR_CCS  =$(wildcard src/actors/*.cc)
 ACTOR_EXES =$(patsubst %.cc,%,$(ACTOR_CCS))
 
-actors: LDLIBS += -Lbuild -lsheepshead -lprotobuf
+actors: LDLIBS += -Lbuild -lsheepshead -lprotobuf -llearning
 actors: $(STATIC_LIB_TARGET) $(ACTOR_EXES)
 
 
@@ -78,6 +97,8 @@ testvalgrind:
 
 clean:
 	rm -rf $(INTERFACE_OBJS)
+	rm -rf $(LEARNING_OBJS)
+	rm -rf $(ACTOR_EXES)
 	rm -rf $(PROTO_OBJS)
 	rm -rf $(PROTO_HS) $(PROTO_CCS)
 	rm -rf $(DEPENDS)
