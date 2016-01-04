@@ -25,7 +25,7 @@ bool PlayerId::operator==(const PlayerId& other) const
 {
   if(this->is_null()) return other.is_null();
 
-  return m_position == other.m_position && m_hand_ptr == other.m_hand_ptr;
+  return m_position == other.m_position;
 }
 
 bool PlayerId::operator!=(const PlayerId& other) const
