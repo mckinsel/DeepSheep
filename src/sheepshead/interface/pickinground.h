@@ -76,6 +76,9 @@ public:
   //! Whether the PickingRound is finished, and Tricks can begin.
   bool is_finished() const;
 
+  //! Get the picking decision make by the specified player.
+  PickDecision pick_decision_by(PlayerId playerid) const;
+
   //! Return a string useful for debugging
   std::string debug_string() const;
 

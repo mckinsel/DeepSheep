@@ -161,6 +161,23 @@ bool PickingRound<Handle_T>::is_finished() const
 }
 
 template<typename Handle_T>
+PickDecision PickingRound<Handle_T>::pick_decision_by(PlayerId playerid) const
+{
+  auto player_itr = leader();
+  if(player_itr.is_null()) {
+    return PickDecision::UNASKED;
+  }
+
+  for(auto pick_itr=pick_decisions_begin(); pick_itr!=pick_decisions_end(); pick_itr++) {
+    if(player_itr->position() == playerid.position()) {
+      return *pick_itr;
+    }
+  }
+
+  return PickDecision::UNASKED;
+}
+
+template<typename Handle_T>
 std::string PickingRound<Handle_T>::debug_string() const
 {
   std::stringstream out_str;
