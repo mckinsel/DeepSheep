@@ -57,6 +57,9 @@ public:
   //! Return a null player if the Trick is not finished.
   PlayerId winner() const;
 
+  //! Return the card played by the specified player
+  Card card_played_by(PlayerId playerid) const;
+
   //! Return the point value of the trick.
   int point_value(bool include_unknown) const;
 

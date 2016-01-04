@@ -85,6 +85,22 @@ int Trick<Handle_T>::number_of_laid_cards() const
 }
 
 template<typename Handle_T>
+Card Trick<Handle_T>::card_played_by(PlayerId playerid) const
+{
+  auto player_itr = leader();
+  auto card_itr = laid_cards_begin();
+  do {
+    if(*player_itr == playerid) {
+      return *card_itr;
+    }
+    card_itr++;
+    player_itr++;
+  } while(player_itr != leader() && card_itr != laid_cards_end());
+
+  return Card();
+}
+
+template<typename Handle_T>
 std::string Trick<Handle_T>::debug_string() const
 {
   std::stringstream out_str;
