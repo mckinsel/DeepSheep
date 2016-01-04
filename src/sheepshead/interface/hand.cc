@@ -297,12 +297,16 @@ PlayerId Hand::current_player() const
 
 Hand::TurnType Hand::current_turn() const
 {
-  auto player = current_player();
-  if(player.is_null()) {
-    return TurnType::NOT_PLAYABLE;
+  if(is_finished()) {
+    return TurnType::FINISHED;
   }
+  if(is_arbitrable()) {
+    return TurnType::ARBITRABLE;
+  }
+
+  auto player = current_player();
   auto available_plays_ = available_plays(player);
-  TurnType turn_type;
+  TurnType turn_type = TurnType::PICK;
   switch(available_plays_[0].play_type()) {
     case Play::PlayType::PICK: turn_type = TurnType::PICK; break;
     case Play::PlayType::LONER: turn_type = TurnType::LONER; break;
@@ -337,6 +341,15 @@ std::string Hand::debug_string() const
     out_stream << seat(*player_itr).debug_string() << std::endl;
     ++player_itr;
   } while(player_itr != dealer());
+
+  if(is_finished()) {
+    out_stream << "Rewards:" << std::endl;
+    player_itr = dealer();
+    do {
+      out_stream << player_itr->debug_string() << " " << reward(*player_itr) << std::endl;
+      ++player_itr;
+    } while(player_itr != dealer());
+  }
 
   return out_stream.str();
 }

@@ -85,7 +85,7 @@ public:
   PlayerId current_player() const;
 
   enum class TurnType {PICK, LONER, PARTNER, UNKNOWN, DISCARD, TRICK_0,
-                       TRICK_1, TRICK_2, TRICK_3, NOT_PLAYABLE};
+                       TRICK_1, TRICK_2, TRICK_3, FINISHED, ARBITRABLE};
   //! Get the current turn, if the hand is playable.
   TurnType current_turn() const;
 
