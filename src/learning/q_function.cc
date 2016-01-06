@@ -1,5 +1,7 @@
 #include "q_function.h"
 
+#include <algorithm>
+
 namespace learning {
 
 QFunction::QFunction()
