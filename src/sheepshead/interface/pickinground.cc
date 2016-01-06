@@ -169,7 +169,7 @@ PickDecision PickingRound<Handle_T>::pick_decision_by(PlayerId playerid) const
   }
 
   for(auto pick_itr=pick_decisions_begin(); pick_itr!=pick_decisions_end(); pick_itr++) {
-    if(player_itr->position() == playerid.position()) {
+    if(*player_itr == playerid) {
       return *pick_itr;
     }
   }
