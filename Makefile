@@ -7,7 +7,7 @@ LEARNING_LIB_TARGET=build/liblearning.a
 .PHONY: doc clean all test
 
 
-all: $(STATIC_LIB_TARGET) $(LEARNING_LIB_TARGET) actors
+all: $(STATIC_LIB_TARGET) $(LEARNING_LIB_TARGET) actors bindings
 
 #################################################################
 ## Build the protocol buffer sources
@@ -73,6 +73,19 @@ ACTOR_EXES =$(patsubst %.cc,%,$(ACTOR_CCS))
 actors: LDLIBS += -Lbuild -lsheepshead -lprotobuf -llearning
 actors: $(STATIC_LIB_TARGET) $(ACTOR_EXES)
 
+#################################################################
+## Build the python bindings
+#################################################################
+BINDINGS_CC =bindings/sheepshead.cc
+BINDINGS_SO =bindings/sheepshead.so
+
+bindings: LDLIBS += -Lbuild -lsheepshead -lprotobuf
+bindings: CXXFLAGS = -shared -fPIC -std=c++11 -Os -Wall -Isrc -I/home/marcus/pybind11/include $$(python3-config --cflags --ldflags --libs)
+
+bindings: $(BINDINGS_SO)
+
+$(BINDINGS_SO): $(BINDINGS_CC)
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDLIBS)
 
 #################################################################
 ## Build documentation
