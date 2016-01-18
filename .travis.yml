@@ -16,6 +16,11 @@ install:
     - sudo make
     - sudo mv libgtest* /usr/lib/
     - cd "${TRAVIS_BUILD_DIR}"
+    - sudo apt-get install python3
+    - alias python=python3
+    - git clone https://github.com/wjakob/pybind11.git
+    - cd pybind11 && cmake . && make -j 2 && cd ..
+    - sudo mv pybind11/include/* /usr/include
 
 script:
     - make && make test

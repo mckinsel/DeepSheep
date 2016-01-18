@@ -80,7 +80,7 @@ BINDINGS_CC =bindings/sheepshead.cc
 BINDINGS_SO =bindings/sheepshead.so
 
 bindings: LDLIBS += -Lbuild -lsheepshead -lprotobuf
-bindings: CXXFLAGS = -shared -fPIC -std=c++11 -Os -Wall -Isrc -I/home/marcus/pybind11/include $$(python3-config --cflags --ldflags --libs)
+bindings: CXXFLAGS = -shared -fPIC -std=c++11 -Os -Wall -Isrc  $$(python3-config --cflags --ldflags --libs)
 
 bindings: $(BINDINGS_SO)
 
@@ -115,5 +115,6 @@ clean:
 	rm -rf $(PROTO_OBJS)
 	rm -rf $(PROTO_HS) $(PROTO_CCS)
 	rm -rf $(DEPENDS)
+	rm -rf $(BINDINGS_SO)
 	rm -rf build/
 	rm -rf doc/html
